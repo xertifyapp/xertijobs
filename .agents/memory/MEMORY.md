@@ -1,0 +1,1 @@
+- [OpenAPI/Orval codegen quirks](openapi-orval-quirks.md) — `format: email` breaks Orval Zod generation; use minLength and validate server-side.

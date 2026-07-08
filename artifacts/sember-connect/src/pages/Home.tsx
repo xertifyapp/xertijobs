@@ -36,7 +36,7 @@ export default function Home() {
                   Explorar Oportunidades <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/registro-organizacion">
+              <Link href="/registro?tipo=empresa">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-14 bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-white">
                   Soy una Institución
                 </Button>

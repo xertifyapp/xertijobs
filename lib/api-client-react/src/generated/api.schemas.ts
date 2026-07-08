@@ -16,6 +16,61 @@ export interface LoginInput {
   password: string;
 }
 
+export type RegisterInputRole = typeof RegisterInputRole[keyof typeof RegisterInputRole];
+
+
+export const RegisterInputRole = {
+  postulante: 'postulante',
+  empresa: 'empresa',
+} as const;
+
+export interface OrganizationInput {
+  /** @minLength 1 */
+  name: string;
+  type: string;
+  country: string;
+  city?: string;
+  website?: string;
+  description?: string;
+  contactEmail?: string;
+}
+
+export interface RegisterInput {
+  role: RegisterInputRole;
+  /** @minLength 2 */
+  name: string;
+  /** @minLength 3 */
+  email: string;
+  /** @minLength 8 */
+  password: string;
+  organization?: OrganizationInput;
+}
+
+export interface RegisterResult {
+  email: string;
+  emailSent: boolean;
+}
+
+export interface VerifyEmailInput {
+  /** @minLength 1 */
+  email: string;
+  /**
+     * @minLength 6
+     * @maxLength 6
+     */
+  code: string;
+}
+
+export interface VerifyEmailResult {
+  verified: boolean;
+  role: string;
+}
+
+export interface ResendOtpInput {
+  /** @minLength 1 */
+  email: string;
+}
+
 export interface AuthUser {
   id: number;
   email: string;
@@ -45,17 +100,6 @@ export interface Organization {
   /** pendiente | aprobada | rechazada */
   status: string;
   createdAt: string;
-}
-
-export interface OrganizationInput {
-  /** @minLength 1 */
-  name: string;
-  type: string;
-  country: string;
-  city?: string;
-  website?: string;
-  description?: string;
-  contactEmail?: string;
 }
 
 export interface OrganizationUpdate {

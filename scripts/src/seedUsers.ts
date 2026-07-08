@@ -62,6 +62,7 @@ export async function seedUsers(): Promise<void> {
       name: u.name,
       professionalId: u.professionalId,
       organizationId: u.organizationId,
+      emailVerifiedAt: new Date(),
     });
     process.stdout.write(`Created user ${u.email} (${u.role})\n`);
   }

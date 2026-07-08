@@ -26,17 +26,19 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — source of truth for the API contract
-- `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities, users, sessions
+- `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities, users, sessions, emailOtps
 - `artifacts/api-server/src/routes/` — Express routers per domain, re-exported in `routes/index.ts` (incl. `auth.ts`)
 - `artifacts/api-server/src/lib/session.ts` — express-session + connect-pg-simple setup; `src/middlewares/auth.ts` — `requireAuth` / `requireRole`
 - `artifacts/api-server/src/lib/serialize.ts` — `serializeDates` helper (Date → ISO string) used before Zod response parsing
-- `artifacts/sember-connect/src/pages/` — Home, Opportunities, OpportunityDetail, Organizations, RegisterOrganization, Profile, Panel, Admin, Login
+- `artifacts/sember-connect/src/pages/` — Home, Opportunities, OpportunityDetail, Organizations, Register, Profile, Panel, Admin, Login
 - `artifacts/sember-connect/src/hooks/useAuth.ts` — session state hook; `src/components/RequireAuth.tsx` — route guard
 - `scripts/src/seed.ts` — demo seed data (also invokes `seedUsers.ts`)
 
 ## Architecture decisions
 
-- Session-based auth (express-session + connect-pg-simple, cookie sameSite lax, 7d). Roles: `postulante` (linked professionalId), `empresa` (linked organizationId), `admin`. Endpoints: POST /auth/login, POST /auth/logout, GET /auth/me.
+- Session-based auth (express-session + connect-pg-simple, cookie sameSite lax, 7d). Roles: `postulante` (linked professionalId), `empresa` (linked organizationId), `admin`. Endpoints: POST /auth/login, /auth/register, /auth/verify-email, /auth/resend-otp, /auth/logout, GET /auth/me.
+- Registration (/registro, tabs postulante/empresa) requires email OTP verification: 6-digit code, bcrypt-hashed in `email_otps` (one row per user, upsert), 10 min expiry, 5 attempts max, 60s resend cooldown. Emails sent via the Replit Gmail connector (`api-server/src/lib/mailer.ts`, @replit/connectors-sdk) from the owner's Gmail. Login returns 403 `email_no_verificado` until verified.
+- Empresa registration creates the org with status `pendiente` + a user account; login returns 403 `pendiente_aprobacion` until the org is `aprobada` by admin in /admin. Old /registro-organizacion route redirects to /registro?tipo=empresa.
 - Browsing opportunities/organizations stays PUBLIC (no login). Protected: /perfil (postulante), /panel (empresa + admin; empresa locked to its own org, admin gets an org selector), /admin (admin only). Server enforces the same rules via `requireAuth`/`requireRole` + ownership checks.
 - Test accounts (shown on /login): admin@sember.com / Admin123!, empresa@sember.com / Empresa123! (org Globant), postulante@sember.com / Postulante123! (professional id 1).
 - Organizations register with status `pendiente` and must be approved (`aprobada`) by SEMBER from /admin before appearing publicly.

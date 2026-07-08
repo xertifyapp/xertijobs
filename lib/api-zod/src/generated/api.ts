@@ -40,6 +40,73 @@ export const LoginResponse = zod.object({
 
 
 /**
+ * @summary Registrar cuenta (postulante o empresa)
+ */
+export const registerBodyNameMin = 2;
+
+export const registerBodyEmailMin = 3;
+
+export const registerBodyPasswordMin = 8;
+
+
+
+
+export const RegisterBody = zod.object({
+  "role": zod.enum(['postulante', 'empresa']),
+  "name": zod.string().min(registerBodyNameMin),
+  "email": zod.string().min(registerBodyEmailMin),
+  "password": zod.string().min(registerBodyPasswordMin),
+  "organization": zod.object({
+  "name": zod.string().min(1),
+  "type": zod.string(),
+  "country": zod.string(),
+  "city": zod.string().optional(),
+  "website": zod.string().optional(),
+  "description": zod.string().optional(),
+  "contactEmail": zod.string().optional()
+}).optional()
+})
+
+export const RegisterResponse = zod.object({
+  "email": zod.string(),
+  "emailSent": zod.boolean()
+})
+
+
+/**
+ * @summary Verificar correo con código OTP
+ */
+
+export const verifyEmailBodyCodeMin = 6;
+export const verifyEmailBodyCodeMax = 6;
+
+
+
+export const VerifyEmailBody = zod.object({
+  "email": zod.string().min(1),
+  "code": zod.string().min(verifyEmailBodyCodeMin).max(verifyEmailBodyCodeMax)
+})
+
+export const VerifyEmailResponse = zod.object({
+  "verified": zod.boolean(),
+  "role": zod.string()
+})
+
+
+/**
+ * @summary Reenviar código OTP
+ */
+
+
+
+export const ResendOtpBody = zod.object({
+  "email": zod.string().min(1)
+})
+
+export const ResendOtpResponse = zod.unknown()
+
+
+/**
  * @summary Cerrar sesión
  */
 export const LogoutResponse = zod.void()

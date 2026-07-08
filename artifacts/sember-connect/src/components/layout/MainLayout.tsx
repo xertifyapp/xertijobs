@@ -46,11 +46,16 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Admin</Link>
             )}
             {!isLoading && !user && (
-              <Link href="/login">
-                <Button size="sm">
-                  <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/registro">
+                  <Button size="sm" variant="ghost">Crear Cuenta</Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="sm">
+                    <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
+                  </Button>
+                </Link>
+              </div>
             )}
             {user && (
               <div className="flex items-center gap-3">
@@ -86,7 +91,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="font-medium mb-4">Instituciones</h4>
             <div className="flex flex-col gap-2">
-              <Link href="/registro-organizacion" className="text-sm text-muted-foreground hover:text-primary">Registrar Organización</Link>
+              <Link href="/registro?tipo=empresa" className="text-sm text-muted-foreground hover:text-primary">Registrar Organización</Link>
               <Link href="/panel" className="text-sm text-muted-foreground hover:text-primary">Panel de Control</Link>
             </div>
           </div>

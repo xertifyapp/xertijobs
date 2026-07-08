@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLocation, Redirect } from "wouter";
+import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn } from "lucide-react";
@@ -53,11 +53,21 @@ export default function Login() {
         navigate(homeForRole(authUser.role));
       },
       onError: (err: unknown) => {
-        const status = (err as { status?: number }).status;
-        toast({
-          title: status === 401 ? "Correo o contraseña incorrectos" : "Error al iniciar sesión",
-          variant: "destructive",
-        });
+        const { status, data } = err as { status?: number; data?: { error?: string; code?: string } };
+        let title = "Error al iniciar sesión";
+        let description: string | undefined;
+        if (status === 401) {
+          title = "Correo o contraseña incorrectos";
+        } else if (status === 403 && data?.code === "email_no_verificado") {
+          title = "Correo sin verificar";
+          description = "Debes verificar tu correo electrónico antes de iniciar sesión.";
+        } else if (status === 403 && data?.code === "pendiente_aprobacion") {
+          title = "Cuenta pendiente de aprobación";
+          description = "Tu organización está pendiente de aprobación por el equipo de SEMBER.";
+        } else if (data?.error) {
+          description = data.error;
+        }
+        toast({ title, description, variant: "destructive" });
       },
     });
   };
@@ -94,6 +104,10 @@ export default function Login() {
                   </Button>
                 </form>
               </Form>
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                ¿No tienes cuenta?{" "}
+                <Link href="/registro" className="text-primary hover:underline">Regístrate</Link>
+              </p>
             </CardContent>
           </Card>
 

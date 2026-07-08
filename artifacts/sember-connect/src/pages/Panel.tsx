@@ -130,7 +130,7 @@ export default function Panel() {
       {!currentOrgId ? (
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg mb-4">No hay organizaciones aprobadas disponibles.</p>
-          <Link href="/registro-organizacion"><Button>Registrar una Organización</Button></Link>
+          <Link href="/registro?tipo=empresa"><Button>Registrar una Organización</Button></Link>
         </div>
       ) : (
         <div className="container mx-auto px-4 py-8 space-y-8">

@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +8,7 @@ import Home from "@/pages/Home";
 import Opportunities from "@/pages/Opportunities";
 import OpportunityDetail from "@/pages/OpportunityDetail";
 import Organizations from "@/pages/Organizations";
-import RegisterOrganization from "@/pages/RegisterOrganization";
+import Register from "@/pages/Register";
 import Profile from "@/pages/Profile";
 import Panel from "@/pages/Panel";
 import Admin from "@/pages/Admin";
@@ -31,7 +31,10 @@ function Router() {
       <Route path="/oportunidades" component={Opportunities} />
       <Route path="/oportunidades/:id" component={OpportunityDetail} />
       <Route path="/organizaciones" component={Organizations} />
-      <Route path="/registro-organizacion" component={RegisterOrganization} />
+      <Route path="/registro" component={Register} />
+      <Route path="/registro-organizacion">
+        <Redirect to="/registro?tipo=empresa" />
+      </Route>
       <Route path="/login" component={Login} />
       <Route path="/perfil">
         <RequireAuth roles={["postulante"]}>

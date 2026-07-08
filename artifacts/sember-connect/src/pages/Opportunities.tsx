@@ -155,7 +155,7 @@ export default function Opportunities() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Publica tus oportunidades y conecta con profesionales en toda la región.
                   </p>
-                  <Link href="/registro-organizacion">
+                  <Link href="/registro?tipo=empresa">
                     <Button variant="outline" className="w-full">Registrar Institución</Button>
                   </Link>
                 </CardContent>
