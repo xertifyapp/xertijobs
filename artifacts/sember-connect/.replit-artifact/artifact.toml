@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "SEMBER CONNECT"
+version = "1.0.0"
+id = "artifacts/sember-connect"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19887
+
+[services.development]
+run = "pnpm --filter @workspace/sember-connect run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sember-connect", "run", "build" ]
+publicDir = "artifacts/sember-connect/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19887"
+BASE_PATH = "/"

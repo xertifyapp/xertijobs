@@ -1,6 +1,6 @@
-# [Project name]
+# SEMBER CONNECT
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profesionales y estudiantes: las organizaciones publican oportunidades (internships, empleos, becas, bootcamps, eventos, movilidad) y los profesionales postulan. SEMBER opera como superadministrador.
 
 ## Run & Operate
 
@@ -9,6 +9,7 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/scripts run seed` — seed demo data (skips if data exists)
 - Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
@@ -18,27 +19,43 @@ _Replace the heading above with the project's name, and this line with one sente
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
+- Frontend: React + Vite (`artifacts/sember-connect`), wouter, TanStack Query, shadcn/ui, Tailwind
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — source of truth for the API contract
+- `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities
+- `artifacts/api-server/src/routes/` — Express routers per domain, re-exported in `routes/index.ts`
+- `artifacts/api-server/src/lib/serialize.ts` — `serializeDates` helper (Date → ISO string) used before Zod response parsing
+- `artifacts/sember-connect/src/pages/` — Home, Opportunities, OpportunityDetail, Organizations, RegisterOrganization, Profile, Panel, Admin
+- `scripts/src/seed.ts` — demo seed data
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- No authentication in this first version (planned follow-up). The professional experience uses demo professional id 1; the institutional panel has an organization selector; /admin is open.
+- Organizations register with status `pendiente` and must be approved (`aprobada`) by SEMBER from /admin before appearing publicly.
+- Domain values are plain-text Spanish enums: org types (universidad, empresa, gobierno, ong, fundacion, organismo_internacional), opportunity types (internship, empleo, beca, bootcamp, evento, movilidad, convocatoria), modality (presencial, remoto, hibrido), application status (enviada, en_revision, preseleccionado, aceptado, rechazado), opportunity status (activa, cerrada, borrador).
+- `GET /opportunities/:id` increments the `views` counter.
+- Applications have a DB unique constraint (opportunityId, professionalId); duplicates return 409.
+- Recent activity is derived from recent rows across tables, not a separate events table.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Public: home, opportunity search with filters, opportunity detail (apply + save), organization directory, organization registration.
+- /perfil — professional panel: profile editing, my applications, saved opportunities.
+- /panel — institutional panel: stats, opportunity CRUD, application review with status changes.
+- /admin — SEMBER superadmin: global stats, recent activity, organization approval, management views.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- ALL user-facing UI text must be in Spanish.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- OpenAPI response `createdAt` fields are strings; Drizzle returns `Date` — always wrap response payloads in `serializeDates(...)` before `.parse(...)` in api-server routes.
+- After changing `lib/db` schema, run `pnpm run typecheck:libs` before typechecking artifacts (stale declarations cause phantom import errors).
+- Workflow names: `artifacts/api-server: API Server` and `artifacts/sember-connect: web`.
 
 ## Pointers
 

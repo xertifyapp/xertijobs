@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SEMBER CONNECT API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: organizations
+  - name: opportunities
+  - name: professionals
+  - name: applications
+  - name: stats
 paths:
   /healthz:
     get:
@@ -24,6 +28,458 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /organizations:
+    get:
+      operationId: listOrganizations
+      tags: [organizations]
+      summary: List organizations
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: type
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+    post:
+      operationId: createOrganization
+      tags: [organizations]
+      summary: Register an organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+  /organizations/{id}:
+    get:
+      operationId: getOrganization
+      tags: [organizations]
+      summary: Get organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Organization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateOrganization
+      tags: [organizations]
+      summary: Update organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+    delete:
+      operationId: deleteOrganization
+      tags: [organizations]
+      summary: Delete organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+  /opportunities:
+    get:
+      operationId: listOpportunities
+      tags: [opportunities]
+      summary: Search opportunities
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string }
+        - name: country
+          in: query
+          schema: { type: string }
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: modality
+          in: query
+          schema: { type: string }
+        - name: area
+          in: query
+          schema: { type: string }
+        - name: organizationId
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Opportunities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Opportunity"
+    post:
+      operationId: createOpportunity
+      tags: [opportunities]
+      summary: Publish an opportunity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+  /opportunities/{id}:
+    get:
+      operationId: getOpportunity
+      tags: [opportunities]
+      summary: Get opportunity detail (increments view count)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Opportunity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateOpportunity
+      tags: [opportunities]
+      summary: Update opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+    delete:
+      operationId: deleteOpportunity
+      tags: [opportunities]
+      summary: Delete opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+  /professionals:
+    get:
+      operationId: listProfessionals
+      tags: [professionals]
+      summary: List professionals
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: country
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Professionals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Professional"
+    post:
+      operationId: createProfessional
+      tags: [professionals]
+      summary: Create professional profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfessionalInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Professional"
+  /professionals/{id}:
+    get:
+      operationId: getProfessional
+      tags: [professionals]
+      summary: Get professional profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Professional
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Professional"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProfessional
+      tags: [professionals]
+      summary: Update professional profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfessionalUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Professional"
+  /professionals/{id}/saved:
+    get:
+      operationId: listSavedOpportunities
+      tags: [professionals]
+      summary: List saved opportunities for a professional
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Saved opportunities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Opportunity"
+    post:
+      operationId: saveOpportunity
+      tags: [professionals]
+      summary: Save an opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedOpportunityInput"
+      responses:
+        "201":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedOpportunity"
+  /professionals/{id}/saved/{opportunityId}:
+    delete:
+      operationId: unsaveOpportunity
+      tags: [professionals]
+      summary: Remove a saved opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: opportunityId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Removed
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List applications
+      parameters:
+        - name: opportunityId
+          in: query
+          schema: { type: integer }
+        - name: professionalId
+          in: query
+          schema: { type: integer }
+        - name: organizationId
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Apply to an opportunity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "409":
+          description: Already applied
+  /applications/{id}:
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+  /stats/global:
+    get:
+      operationId: getGlobalStats
+      tags: [stats]
+      summary: Global executive dashboard stats (SEMBER)
+      responses:
+        "200":
+          description: Global stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalStats"
+  /stats/organizations/{id}:
+    get:
+      operationId: getOrganizationStats
+      tags: [stats]
+      summary: Institutional dashboard stats
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Organization stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationStats"
+  /activity/recent:
+    get:
+      operationId: getRecentActivity
+      tags: [stats]
+      summary: Recent platform activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +489,293 @@ components:
           type: string
       required:
         - status
-
+    Organization:
+      type: object
+      required: [id, name, type, country, status, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        type: { type: string, description: "universidad | empresa | gobierno | ong | fundacion | organismo_internacional" }
+        country: { type: string }
+        city: { type: ["string", "null"] }
+        website: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        contactEmail: { type: ["string", "null"] }
+        status: { type: string, description: "pendiente | aprobada | rechazada" }
+        createdAt: { type: string }
+    OrganizationInput:
+      type: object
+      required: [name, type, country]
+      properties:
+        name: { type: string, minLength: 1 }
+        type: { type: string }
+        country: { type: string }
+        city: { type: string }
+        website: { type: string }
+        description: { type: string }
+        contactEmail: { type: string }
+    OrganizationUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        type: { type: string }
+        country: { type: string }
+        city: { type: string }
+        website: { type: string }
+        description: { type: string }
+        contactEmail: { type: string }
+        status: { type: string }
+    Opportunity:
+      type: object
+      required: [id, organizationId, title, type, country, modality, status, createdAt]
+      properties:
+        id: { type: integer }
+        organizationId: { type: integer }
+        organizationName: { type: ["string", "null"] }
+        title: { type: string }
+        type: { type: string, description: "internship | empleo | beca | bootcamp | evento | movilidad | convocatoria" }
+        area: { type: ["string", "null"] }
+        country: { type: string }
+        city: { type: ["string", "null"] }
+        modality: { type: string, description: "presencial | remoto | hibrido" }
+        paid: { type: ["boolean", "null"] }
+        deadline: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        requirements: { type: ["string", "null"] }
+        competencies:
+          type: array
+          items: { type: string }
+        benefits: { type: ["string", "null"] }
+        requiredDocuments:
+          type: array
+          items: { type: string }
+        externalLink: { type: ["string", "null"] }
+        language: { type: ["string", "null"] }
+        status: { type: string, description: "activa | cerrada | borrador" }
+        views: { type: integer }
+        applicationsCount: { type: ["integer", "null"] }
+        createdAt: { type: string }
+    OpportunityInput:
+      type: object
+      required: [organizationId, title, type, country, modality]
+      properties:
+        organizationId: { type: integer }
+        title: { type: string, minLength: 1 }
+        type: { type: string }
+        area: { type: string }
+        country: { type: string }
+        city: { type: string }
+        modality: { type: string }
+        paid: { type: boolean }
+        deadline: { type: string }
+        description: { type: string }
+        requirements: { type: string }
+        competencies:
+          type: array
+          items: { type: string }
+        benefits: { type: string }
+        requiredDocuments:
+          type: array
+          items: { type: string }
+        externalLink: { type: string }
+        language: { type: string }
+        status: { type: string }
+    OpportunityUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        type: { type: string }
+        area: { type: string }
+        country: { type: string }
+        city: { type: string }
+        modality: { type: string }
+        paid: { type: boolean }
+        deadline: { type: string }
+        description: { type: string }
+        requirements: { type: string }
+        competencies:
+          type: array
+          items: { type: string }
+        benefits: { type: string }
+        requiredDocuments:
+          type: array
+          items: { type: string }
+        externalLink: { type: string }
+        language: { type: string }
+        status: { type: string }
+    Professional:
+      type: object
+      required: [id, name, email, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        headline: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        bio: { type: ["string", "null"] }
+        languages:
+          type: array
+          items: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        education: { type: ["string", "null"] }
+        experience: { type: ["string", "null"] }
+        certifications:
+          type: array
+          items: { type: string }
+        internationalAvailability: { type: ["boolean", "null"] }
+        countriesOfInterest:
+          type: array
+          items: { type: string }
+        preferredModality: { type: ["string", "null"] }
+        createdAt: { type: string }
+    ProfessionalInput:
+      type: object
+      required: [name, email]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string }
+        headline: { type: string }
+        country: { type: string }
+        city: { type: string }
+        bio: { type: string }
+        languages:
+          type: array
+          items: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        education: { type: string }
+        experience: { type: string }
+        certifications:
+          type: array
+          items: { type: string }
+        internationalAvailability: { type: boolean }
+        countriesOfInterest:
+          type: array
+          items: { type: string }
+        preferredModality: { type: string }
+    ProfessionalUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string }
+        headline: { type: string }
+        country: { type: string }
+        city: { type: string }
+        bio: { type: string }
+        languages:
+          type: array
+          items: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        education: { type: string }
+        experience: { type: string }
+        certifications:
+          type: array
+          items: { type: string }
+        internationalAvailability: { type: boolean }
+        countriesOfInterest:
+          type: array
+          items: { type: string }
+        preferredModality: { type: string }
+    SavedOpportunity:
+      type: object
+      required: [id, professionalId, opportunityId]
+      properties:
+        id: { type: integer }
+        professionalId: { type: integer }
+        opportunityId: { type: integer }
+    SavedOpportunityInput:
+      type: object
+      required: [opportunityId]
+      properties:
+        opportunityId: { type: integer }
+    Application:
+      type: object
+      required: [id, opportunityId, professionalId, status, createdAt]
+      properties:
+        id: { type: integer }
+        opportunityId: { type: integer }
+        professionalId: { type: integer }
+        opportunityTitle: { type: ["string", "null"] }
+        organizationName: { type: ["string", "null"] }
+        professionalName: { type: ["string", "null"] }
+        professionalEmail: { type: ["string", "null"] }
+        professionalHeadline: { type: ["string", "null"] }
+        status: { type: string, description: "enviada | en_revision | preseleccionado | aceptado | rechazado" }
+        message: { type: ["string", "null"] }
+        createdAt: { type: string }
+    ApplicationInput:
+      type: object
+      required: [opportunityId, professionalId]
+      properties:
+        opportunityId: { type: integer }
+        professionalId: { type: integer }
+        message: { type: string }
+    ApplicationUpdate:
+      type: object
+      properties:
+        status: { type: string }
+    GlobalStats:
+      type: object
+      required: [totalOrganizations, pendingOrganizations, totalOpportunities, activeOpportunities, totalApplications, totalProfessionals, totalCountries, opportunitiesByType, opportunitiesByCountry, applicationsByStatus]
+      properties:
+        totalOrganizations: { type: integer }
+        pendingOrganizations: { type: integer }
+        totalOpportunities: { type: integer }
+        activeOpportunities: { type: integer }
+        totalApplications: { type: integer }
+        totalProfessionals: { type: integer }
+        totalCountries: { type: integer }
+        totalViews: { type: integer }
+        opportunitiesByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+        opportunitiesByCountry:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+        applicationsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+        organizationsByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+    OrganizationStats:
+      type: object
+      required: [publishedOpportunities, activeOpportunities, totalApplications, totalViews, applicationsByStatus, applicationsByOpportunity]
+      properties:
+        publishedOpportunities: { type: integer }
+        activeOpportunities: { type: integer }
+        totalApplications: { type: integer }
+        totalViews: { type: integer }
+        applicationsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+        applicationsByOpportunity:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByKey"
+    CountByKey:
+      type: object
+      required: [key, count]
+      properties:
+        key: { type: string }
+        count: { type: integer }
+    ActivityItem:
+      type: object
+      required: [id, kind, title, createdAt]
+      properties:
+        id: { type: integer }
+        kind: { type: string, description: "opportunity_published | application_received | organization_registered | organization_approved" }
+        title: { type: string }
+        subtitle: { type: ["string", "null"] }
+        createdAt: { type: string }
