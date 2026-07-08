@@ -18,6 +18,47 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Iniciar sesión
+ */
+
+
+
+
+export const LoginBody = zod.object({
+  "email": zod.string().min(1),
+  "password": zod.string().min(1)
+})
+
+export const LoginResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "role": zod.string().describe('postulante | empresa | admin'),
+  "name": zod.string(),
+  "professionalId": zod.number().nullish(),
+  "organizationId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Cerrar sesión
+ */
+export const LogoutResponse = zod.void()
+
+
+/**
+ * @summary Usuario actual
+ */
+export const GetCurrentUserResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "role": zod.string().describe('postulante | empresa | admin'),
+  "name": zod.string(),
+  "professionalId": zod.number().nullish(),
+  "organizationId": zod.number().nullish()
+})
+
+
+/**
  * @summary List organizations
  */
 export const ListOrganizationsQueryParams = zod.object({

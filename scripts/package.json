@@ -6,11 +6,16 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "seed": "tsx ./src/seed.ts",
+    "seed-users": "tsx ./src/seedUsers.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@workspace/db": "workspace:*",
     "tsx": "catalog:"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "catalog:"
   }
 }

@@ -1,9 +1,10 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useGetOpportunity, useListSavedOpportunities, useSaveOpportunity, useUnsaveOpportunity, useCreateApplication, getListSavedOpportunitiesQueryKey, getGetOpportunityQueryKey } from "@workspace/api-client-react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DEMO_PROFESSIONAL_ID, OPPORTUNITY_TYPES, STATUS_COLORS } from "@/lib/constants";
+import { OPPORTUNITY_TYPES, STATUS_COLORS } from "@/lib/constants";
+import { useAuth } from "@/hooks/useAuth";
 import { MapPin, Globe, Briefcase, Calendar, FileText, CheckCircle2, BookmarkIcon, ExternalLink } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -16,9 +17,13 @@ export default function OpportunityDetail() {
   const oppId = parseInt(id || "0", 10);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
+  const professionalId = user?.professionalId ?? 0;
+  const isPostulante = user?.role === "postulante" && !!professionalId;
 
   const { data: opp, isLoading } = useGetOpportunity(oppId, { query: { enabled: !!oppId, queryKey: getGetOpportunityQueryKey(oppId) } });
-  const { data: savedOpps } = useListSavedOpportunities(DEMO_PROFESSIONAL_ID, { query: { enabled: true, queryKey: getListSavedOpportunitiesQueryKey(DEMO_PROFESSIONAL_ID) } });
+  const { data: savedOpps } = useListSavedOpportunities(professionalId, { query: { enabled: isPostulante, queryKey: getListSavedOpportunitiesQueryKey(professionalId) } });
   
   const saveOpp = useSaveOpportunity();
   const unsaveOpp = useUnsaveOpportunity();
@@ -29,17 +34,21 @@ export default function OpportunityDetail() {
   const [isApplyOpen, setIsApplyOpen] = useState(false);
 
   const handleSaveToggle = () => {
+    if (!isPostulante) {
+      navigate("/login");
+      return;
+    }
     if (isSaved) {
-      unsaveOpp.mutate({ id: DEMO_PROFESSIONAL_ID, opportunityId: oppId }, {
+      unsaveOpp.mutate({ id: professionalId, opportunityId: oppId }, {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(DEMO_PROFESSIONAL_ID) });
+          queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(professionalId) });
           toast({ title: "Oportunidad eliminada de guardados" });
         }
       });
     } else {
-      saveOpp.mutate({ id: DEMO_PROFESSIONAL_ID, data: { opportunityId: oppId } }, {
+      saveOpp.mutate({ id: professionalId, data: { opportunityId: oppId } }, {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(DEMO_PROFESSIONAL_ID) });
+          queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(professionalId) });
           toast({ title: "Oportunidad guardada con éxito" });
         }
       });
@@ -47,7 +56,7 @@ export default function OpportunityDetail() {
   };
 
   const handleApply = () => {
-    apply.mutate({ data: { opportunityId: oppId, professionalId: DEMO_PROFESSIONAL_ID, message: applyMessage } }, {
+    apply.mutate({ data: { opportunityId: oppId, professionalId, message: applyMessage } }, {
       onSuccess: () => {
         toast({ title: "¡Postulación enviada exitosamente!" });
         setIsApplyOpen(false);
@@ -105,6 +114,11 @@ export default function OpportunityDetail() {
             </div>
             
             <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto">
+              {!user ? (
+                <Button size="lg" className="w-full md:w-64" onClick={() => navigate("/login")} disabled={opp.status !== 'activa'}>
+                  Inicia sesión para postular
+                </Button>
+              ) : isPostulante ? (
               <Dialog open={isApplyOpen} onOpenChange={setIsApplyOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="w-full md:w-64" disabled={opp.status !== 'activa' || apply.isPending}>
@@ -134,16 +148,19 @@ export default function OpportunityDetail() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              ) : null}
 
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="w-full md:w-64 bg-background"
-                onClick={handleSaveToggle}
-              >
-                <BookmarkIcon className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary text-primary" : ""}`} />
-                {isSaved ? "Guardada" : "Guardar Oportunidad"}
-              </Button>
+              {(!user || isPostulante) && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full md:w-64 bg-background"
+                  onClick={handleSaveToggle}
+                >
+                  <BookmarkIcon className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary text-primary" : ""}`} />
+                  {isSaved ? "Guardada" : "Guardar Oportunidad"}
+                </Button>
+              )}
             </div>
           </div>
         </div>

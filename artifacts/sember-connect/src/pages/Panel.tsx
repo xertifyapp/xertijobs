@@ -1,5 +1,6 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useUpdateApplication, useCreateOpportunity, useUpdateOpportunity, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey } from "@workspace/api-client-react";
+import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useUpdateApplication, useCreateOpportunity, useUpdateOpportunity, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey, getListOrganizationsQueryKey } from "@workspace/api-client-react";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,11 +34,15 @@ const oppSchema = z.object({
 });
 
 export default function Panel() {
-  const { data: orgs, isLoading: isOrgsLoading } = useListOrganizations({ status: "aprobada" });
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const { data: orgs, isLoading: isOrgsLoading } = useListOrganizations({ status: "aprobada" }, { query: { enabled: isAdmin, queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) } });
   const [selectedOrgId, setSelectedOrgId] = useState<string>("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const currentOrgId = selectedOrgId ? parseInt(selectedOrgId) : (orgs?.[0]?.id || 0);
+  const currentOrgId = isAdmin
+    ? (selectedOrgId ? parseInt(selectedOrgId) : (orgs?.[0]?.id || 0))
+    : (user?.organizationId || 0);
 
   const { data: stats } = useGetOrganizationStats(currentOrgId, { query: { enabled: !!currentOrgId, queryKey: getGetOrganizationStatsQueryKey(currentOrgId) } });
   const { data: opportunities } = useListOpportunities({ organizationId: currentOrgId }, { query: { enabled: !!currentOrgId, queryKey: getListOpportunitiesQueryKey({ organizationId: currentOrgId }) } });
@@ -97,7 +102,7 @@ export default function Panel() {
     });
   };
 
-  if (isOrgsLoading) return <MainLayout><div className="py-20 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div></MainLayout>;
+  if (isAdmin && isOrgsLoading) return <MainLayout><div className="py-20 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div></MainLayout>;
 
   return (
     <MainLayout>
@@ -105,7 +110,7 @@ export default function Panel() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h1 className="text-3xl font-bold">Panel Institucional</h1>
-            {orgs && orgs.length > 0 && (
+            {isAdmin && orgs && orgs.length > 0 && (
               <Select value={currentOrgId.toString()} onValueChange={setSelectedOrgId}>
                 <SelectTrigger className="w-[300px] bg-background">
                   <Building2 className="w-4 h-4 mr-2" />

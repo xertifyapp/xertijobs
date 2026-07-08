@@ -12,6 +12,8 @@ import RegisterOrganization from "@/pages/RegisterOrganization";
 import Profile from "@/pages/Profile";
 import Panel from "@/pages/Panel";
 import Admin from "@/pages/Admin";
+import Login from "@/pages/Login";
+import { RequireAuth } from "@/components/RequireAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,9 +32,22 @@ function Router() {
       <Route path="/oportunidades/:id" component={OpportunityDetail} />
       <Route path="/organizaciones" component={Organizations} />
       <Route path="/registro-organizacion" component={RegisterOrganization} />
-      <Route path="/perfil" component={Profile} />
-      <Route path="/panel" component={Panel} />
-      <Route path="/admin" component={Admin} />
+      <Route path="/login" component={Login} />
+      <Route path="/perfil">
+        <RequireAuth roles={["postulante"]}>
+          <Profile />
+        </RequireAuth>
+      </Route>
+      <Route path="/panel">
+        <RequireAuth roles={["empresa", "admin"]}>
+          <Panel />
+        </RequireAuth>
+      </Route>
+      <Route path="/admin">
+        <RequireAuth roles={["admin"]}>
+          <Admin />
+        </RequireAuth>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

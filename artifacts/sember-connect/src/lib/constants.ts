@@ -36,5 +36,3 @@ export const STATUS_COLORS: Record<string, string> = {
   aceptado: "bg-green-100 text-green-800 border-green-200",
   rechazado: "bg-red-100 text-red-800 border-red-200",
 };
-
-export const DEMO_PROFESSIONAL_ID = 1;

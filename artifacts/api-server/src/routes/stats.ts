@@ -14,10 +14,11 @@ import {
   GetOrganizationStatsResponse,
   GetRecentActivityResponse,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/stats/global", async (_req, res): Promise<void> => {
+router.get("/stats/global", requireRole("admin"), async (_req, res): Promise<void> => {
   const [orgTotals] = await db
     .select({
       total: count(),
@@ -79,10 +80,16 @@ router.get("/stats/global", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/stats/organizations/:id", async (req, res): Promise<void> => {
+router.get("/stats/organizations/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = GetOrganizationStatsParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa" && sessionUser.organizationId !== params.data.id) {
+    res.status(403).json({ error: "Solo puedes ver estadísticas de tu organización" });
     return;
   }
 
@@ -131,7 +138,7 @@ router.get("/stats/organizations/:id", async (req, res): Promise<void> => {
   );
 });
 
-router.get("/activity/recent", async (_req, res): Promise<void> => {
+router.get("/activity/recent", requireRole("admin"), async (_req, res): Promise<void> => {
   const recentOpportunities = await db
     .select({
       id: opportunitiesTable.id,

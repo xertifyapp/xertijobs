@@ -14,6 +14,7 @@ import {
   UpdateOpportunityResponse,
   DeleteOpportunityParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -81,10 +82,19 @@ router.get("/opportunities", async (req, res): Promise<void> => {
   res.json(ListOpportunitiesResponse.parse(serializeDates(rows)));
 });
 
-router.post("/opportunities", async (req, res): Promise<void> => {
+router.post("/opportunities", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateOpportunityBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const sessionUser = req.session.user;
+  if (
+    sessionUser?.role === "empresa" &&
+    sessionUser.organizationId !== parsed.data.organizationId
+  ) {
+    res.status(403).json({ error: "Solo puedes publicar oportunidades de tu organización" });
     return;
   }
 
@@ -145,7 +155,7 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
   res.json(GetOpportunityResponse.parse(serializeDates(opp)));
 });
 
-router.patch("/opportunities/:id", async (req, res): Promise<void> => {
+router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = UpdateOpportunityParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -156,6 +166,18 @@ router.patch("/opportunities/:id", async (req, res): Promise<void> => {
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa") {
+    const [existing] = await db
+      .select({ organizationId: opportunitiesTable.organizationId })
+      .from(opportunitiesTable)
+      .where(eq(opportunitiesTable.id, params.data.id));
+    if (existing && existing.organizationId !== sessionUser.organizationId) {
+      res.status(403).json({ error: "Solo puedes modificar oportunidades de tu organización" });
+      return;
+    }
   }
 
   const [updated] = await db
@@ -178,11 +200,23 @@ router.patch("/opportunities/:id", async (req, res): Promise<void> => {
   res.json(UpdateOpportunityResponse.parse(serializeDates(opp)));
 });
 
-router.delete("/opportunities/:id", async (req, res): Promise<void> => {
+router.delete("/opportunities/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = DeleteOpportunityParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa") {
+    const [existing] = await db
+      .select({ organizationId: opportunitiesTable.organizationId })
+      .from(opportunitiesTable)
+      .where(eq(opportunitiesTable.id, params.data.id));
+    if (existing && existing.organizationId !== sessionUser.organizationId) {
+      res.status(403).json({ error: "Solo puedes eliminar oportunidades de tu organización" });
+      return;
+    }
   }
 
   const [opp] = await db

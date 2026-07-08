@@ -1,6 +1,7 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useGetProfessional, useUpdateProfessional, useListApplications, useListSavedOpportunities, useGetOpportunity, getGetProfessionalQueryKey, getGetOpportunityQueryKey } from "@workspace/api-client-react";
-import { DEMO_PROFESSIONAL_ID, STATUS_COLORS } from "@/lib/constants";
+import { useGetProfessional, useUpdateProfessional, useListApplications, useListSavedOpportunities, useGetOpportunity, getGetProfessionalQueryKey, getGetOpportunityQueryKey, getListApplicationsQueryKey, getListSavedOpportunitiesQueryKey } from "@workspace/api-client-react";
+import { STATUS_COLORS } from "@/lib/constants";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,11 +48,13 @@ function SavedOppCard({ oppId }: { oppId: number }) {
 export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: profile, isLoading: isProfileLoading } = useGetProfessional(DEMO_PROFESSIONAL_ID);
+  const { user } = useAuth();
+  const professionalId = user?.professionalId ?? 0;
+  const { data: profile, isLoading: isProfileLoading } = useGetProfessional(professionalId, { query: { enabled: !!professionalId, queryKey: getGetProfessionalQueryKey(professionalId) } });
   const updateProfile = useUpdateProfessional();
 
-  const { data: applications, isLoading: isAppsLoading } = useListApplications({ professionalId: DEMO_PROFESSIONAL_ID });
-  const { data: savedOpps, isLoading: isSavedLoading } = useListSavedOpportunities(DEMO_PROFESSIONAL_ID);
+  const { data: applications, isLoading: isAppsLoading } = useListApplications({ professionalId }, { query: { enabled: !!professionalId, queryKey: getListApplicationsQueryKey({ professionalId }) } });
+  const { data: savedOpps, isLoading: isSavedLoading } = useListSavedOpportunities(professionalId, { query: { enabled: !!professionalId, queryKey: getListSavedOpportunitiesQueryKey(professionalId) } });
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -81,9 +84,9 @@ export default function Profile() {
   }, [profile, form]);
 
   const onSubmit = (values: z.infer<typeof profileSchema>) => {
-    updateProfile.mutate({ id: DEMO_PROFESSIONAL_ID, data: values }, {
+    updateProfile.mutate({ id: professionalId, data: values }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetProfessionalQueryKey(DEMO_PROFESSIONAL_ID) });
+        queryClient.invalidateQueries({ queryKey: getGetProfessionalQueryKey(professionalId) });
         toast({ title: "Perfil actualizado correctamente" });
       },
       onError: () => {

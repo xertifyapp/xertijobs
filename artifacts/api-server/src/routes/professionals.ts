@@ -26,8 +26,19 @@ import {
   SaveOpportunityResponse,
   UnsaveOpportunityParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/auth";
+import type { Request, Response } from "express";
 
 const router: IRouter = Router();
+
+function canManageProfessional(req: Request, res: Response, professionalId: number): boolean {
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "postulante" && sessionUser.professionalId !== professionalId) {
+    res.status(403).json({ error: "Solo puedes gestionar tu propio perfil" });
+    return false;
+  }
+  return true;
+}
 
 router.get("/professionals", async (req, res): Promise<void> => {
   const query = ListProfessionalsQueryParams.safeParse(req.query);
@@ -89,12 +100,13 @@ router.get("/professionals/:id", async (req, res): Promise<void> => {
   res.json(GetProfessionalResponse.parse(serializeDates(pro)));
 });
 
-router.patch("/professionals/:id", async (req, res): Promise<void> => {
+router.patch("/professionals/:id", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = UpdateProfessionalParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  if (!canManageProfessional(req, res, params.data.id)) return;
 
   const parsed = UpdateProfessionalBody.safeParse(req.body);
   if (!parsed.success) {
@@ -116,12 +128,13 @@ router.patch("/professionals/:id", async (req, res): Promise<void> => {
   res.json(UpdateProfessionalResponse.parse(serializeDates(pro)));
 });
 
-router.get("/professionals/:id/saved", async (req, res): Promise<void> => {
+router.get("/professionals/:id/saved", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = ListSavedOpportunitiesParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  if (!canManageProfessional(req, res, params.data.id)) return;
 
   const rows = await db
     .select({
@@ -157,12 +170,13 @@ router.get("/professionals/:id/saved", async (req, res): Promise<void> => {
   res.json(ListSavedOpportunitiesResponse.parse(serializeDates(rows)));
 });
 
-router.post("/professionals/:id/saved", async (req, res): Promise<void> => {
+router.post("/professionals/:id/saved", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = SaveOpportunityParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  if (!canManageProfessional(req, res, params.data.id)) return;
 
   const parsed = SaveOpportunityBody.safeParse(req.body);
   if (!parsed.success) {
@@ -214,12 +228,13 @@ router.post("/professionals/:id/saved", async (req, res): Promise<void> => {
   res.status(201).json(SaveOpportunityResponse.parse(serializeDates(existing)));
 });
 
-router.delete("/professionals/:id/saved/:opportunityId", async (req, res): Promise<void> => {
+router.delete("/professionals/:id/saved/:opportunityId", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = UnsaveOpportunityParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
+  if (!canManageProfessional(req, res, params.data.id)) return;
 
   await db
     .delete(savedOpportunitiesTable)

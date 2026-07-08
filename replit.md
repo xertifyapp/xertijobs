@@ -9,8 +9,9 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/scripts run seed` — seed demo data (skips if data exists)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/scripts run seed` — seed demo data + test users (skips if data exists)
+- `pnpm --filter @workspace/scripts run seed-users` — seed only the auth test users
+- Required env: `DATABASE_URL` — Postgres connection string; `SESSION_SECRET` — session signing key
 
 ## Stack
 
@@ -25,15 +26,19 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — source of truth for the API contract
-- `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities
-- `artifacts/api-server/src/routes/` — Express routers per domain, re-exported in `routes/index.ts`
+- `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities, users, sessions
+- `artifacts/api-server/src/routes/` — Express routers per domain, re-exported in `routes/index.ts` (incl. `auth.ts`)
+- `artifacts/api-server/src/lib/session.ts` — express-session + connect-pg-simple setup; `src/middlewares/auth.ts` — `requireAuth` / `requireRole`
 - `artifacts/api-server/src/lib/serialize.ts` — `serializeDates` helper (Date → ISO string) used before Zod response parsing
-- `artifacts/sember-connect/src/pages/` — Home, Opportunities, OpportunityDetail, Organizations, RegisterOrganization, Profile, Panel, Admin
-- `scripts/src/seed.ts` — demo seed data
+- `artifacts/sember-connect/src/pages/` — Home, Opportunities, OpportunityDetail, Organizations, RegisterOrganization, Profile, Panel, Admin, Login
+- `artifacts/sember-connect/src/hooks/useAuth.ts` — session state hook; `src/components/RequireAuth.tsx` — route guard
+- `scripts/src/seed.ts` — demo seed data (also invokes `seedUsers.ts`)
 
 ## Architecture decisions
 
-- No authentication in this first version (planned follow-up). The professional experience uses demo professional id 1; the institutional panel has an organization selector; /admin is open.
+- Session-based auth (express-session + connect-pg-simple, cookie sameSite lax, 7d). Roles: `postulante` (linked professionalId), `empresa` (linked organizationId), `admin`. Endpoints: POST /auth/login, POST /auth/logout, GET /auth/me.
+- Browsing opportunities/organizations stays PUBLIC (no login). Protected: /perfil (postulante), /panel (empresa + admin; empresa locked to its own org, admin gets an org selector), /admin (admin only). Server enforces the same rules via `requireAuth`/`requireRole` + ownership checks.
+- Test accounts (shown on /login): admin@sember.com / Admin123!, empresa@sember.com / Empresa123! (org Globant), postulante@sember.com / Postulante123! (professional id 1).
 - Organizations register with status `pendiente` and must be approved (`aprobada`) by SEMBER from /admin before appearing publicly.
 - Domain values are plain-text Spanish enums: org types (universidad, empresa, gobierno, ong, fundacion, organismo_internacional), opportunity types (internship, empleo, beca, bootcamp, evento, movilidad, convocatoria), modality (presencial, remoto, hibrido), application status (enviada, en_revision, preseleccionado, aceptado, rechazado), opportunity status (activa, cerrada, borrador).
 - `GET /opportunities/:id` increments the `views` counter.
@@ -56,6 +61,8 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 - OpenAPI response `createdAt` fields are strings; Drizzle returns `Date` — always wrap response payloads in `serializeDates(...)` before `.parse(...)` in api-server routes.
 - After changing `lib/db` schema, run `pnpm run typecheck:libs` before typechecking artifacts (stale declarations cause phantom import errors).
 - Workflow names: `artifacts/api-server: API Server` and `artifacts/sember-connect: web`.
+- connect-pg-simple `createTableIfMissing: true` fails in the esbuild bundle (missing `dist/table.sql`) — the `session` table is defined in the Drizzle schema instead and created via `db push`; keep `createTableIfMissing: false`.
+- CORS is an allowlist built from `REPLIT_DOMAINS` + `REPLIT_DEV_DOMAIN` (credentials enabled only for those origins).
 
 ## Pointers
 

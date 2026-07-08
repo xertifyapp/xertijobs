@@ -17,6 +17,7 @@ import {
   UpdateApplicationBody,
   UpdateApplicationResponse,
 } from "@workspace/api-zod";
+import { requireAuth, requireRole } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -34,7 +35,7 @@ const applicationWithJoins = {
   createdAt: applicationsTable.createdAt,
 };
 
-router.get("/applications", async (req, res): Promise<void> => {
+router.get("/applications", requireAuth, async (req, res): Promise<void> => {
   const query = ListApplicationsQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: query.error.message });
@@ -48,6 +49,21 @@ router.get("/applications", async (req, res): Promise<void> => {
   if (q.organizationId !== undefined) conditions.push(eq(opportunitiesTable.organizationId, q.organizationId));
   if (q.status) conditions.push(eq(applicationsTable.status, q.status));
 
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "postulante") {
+    if (sessionUser.professionalId === null) {
+      res.status(403).json({ error: "Tu cuenta no tiene un perfil profesional asociado" });
+      return;
+    }
+    conditions.push(eq(applicationsTable.professionalId, sessionUser.professionalId));
+  } else if (sessionUser?.role === "empresa") {
+    if (sessionUser.organizationId === null) {
+      res.status(403).json({ error: "Tu cuenta no tiene una organización asociada" });
+      return;
+    }
+    conditions.push(eq(opportunitiesTable.organizationId, sessionUser.organizationId));
+  }
+
   const rows = await db
     .select(applicationWithJoins)
     .from(applicationsTable)
@@ -60,10 +76,19 @@ router.get("/applications", async (req, res): Promise<void> => {
   res.json(ListApplicationsResponse.parse(serializeDates(rows)));
 });
 
-router.post("/applications", async (req, res): Promise<void> => {
+router.post("/applications", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateApplicationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const sessionUser = req.session.user;
+  if (
+    sessionUser?.role === "postulante" &&
+    sessionUser.professionalId !== parsed.data.professionalId
+  ) {
+    res.status(403).json({ error: "Solo puedes postular con tu propio perfil" });
     return;
   }
 
@@ -109,7 +134,7 @@ router.post("/applications", async (req, res): Promise<void> => {
   res.status(201).json(CreateApplicationResponse.parse(serializeDates(row)));
 });
 
-router.patch("/applications/:id", async (req, res): Promise<void> => {
+router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = UpdateApplicationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -120,6 +145,19 @@ router.patch("/applications/:id", async (req, res): Promise<void> => {
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa") {
+    const [existing] = await db
+      .select({ organizationId: opportunitiesTable.organizationId })
+      .from(applicationsTable)
+      .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
+      .where(eq(applicationsTable.id, params.data.id));
+    if (existing && existing.organizationId !== sessionUser.organizationId) {
+      res.status(403).json({ error: "Solo puedes gestionar postulaciones de tu organización" });
+      return;
+    }
   }
 
   const [updated] = await db

@@ -9,6 +9,25 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface LoginInput {
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  /** postulante | empresa | admin */
+  role: string;
+  name: string;
+  /** @nullable */
+  professionalId?: number | null;
+  /** @nullable */
+  organizationId?: number | null;
+}
+
 export interface Organization {
   id: number;
   name: string;

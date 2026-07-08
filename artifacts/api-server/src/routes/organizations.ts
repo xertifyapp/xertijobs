@@ -14,6 +14,7 @@ import {
   UpdateOrganizationResponse,
   DeleteOrganizationParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -81,7 +82,19 @@ router.get("/organizations/:id", async (req, res): Promise<void> => {
   res.json(GetOrganizationResponse.parse(serializeDates(org)));
 });
 
-router.patch("/organizations/:id", async (req, res): Promise<void> => {
+router.patch("/organizations/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa") {
+    if (sessionUser.organizationId !== Number(req.params["id"])) {
+      res.status(403).json({ error: "Solo puedes modificar tu propia organización" });
+      return;
+    }
+    if (req.body && typeof req.body === "object" && "status" in req.body) {
+      res.status(403).json({ error: "No puedes cambiar el estado de aprobación" });
+      return;
+    }
+  }
+
   const params = UpdateOrganizationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -108,7 +121,7 @@ router.patch("/organizations/:id", async (req, res): Promise<void> => {
   res.json(UpdateOrganizationResponse.parse(serializeDates(org)));
 });
 
-router.delete("/organizations/:id", async (req, res): Promise<void> => {
+router.delete("/organizations/:id", requireRole("admin"), async (req, res): Promise<void> => {
   const params = DeleteOrganizationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
