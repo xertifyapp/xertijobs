@@ -92,7 +92,14 @@ export default function Panel() {
   const { uploadFile: uploadLogo, isUploading: isLogoUploading } = useUpload({
     onSuccess: (res) => {
       orgForm.setValue("logoUrl", res.objectPath, { shouldDirty: true });
-      toast({ title: "Logo cargado. Guarda los cambios para aplicarlo." });
+      updateOrg.mutate({ id: currentOrgId, data: { logoUrl: res.objectPath } }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetOrganizationQueryKey(currentOrgId) });
+          queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) });
+          toast({ title: "Logo actualizado" });
+        },
+        onError: () => toast({ title: "Error al guardar el logo", variant: "destructive" }),
+      });
     },
     onError: () => toast({ title: "Error al subir el logo", variant: "destructive" }),
   });
@@ -403,15 +410,24 @@ export default function Panel() {
                   <Form {...orgForm}>
                     <form onSubmit={orgForm.handleSubmit(onOrgSubmit)} className="space-y-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 rounded-lg bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden border">
+                        <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={isLogoUploading}
+                          title="Cambiar logo"
+                          className="group relative w-20 h-20 rounded-lg bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden border cursor-pointer"
+                        >
                           {currentLogo ? (
                             <img src={objectUrl(currentLogo)} alt="Logo" className="w-full h-full object-cover" />
                           ) : (
                             <Building2 className="w-10 h-10" />
                           )}
-                        </div>
+                          <span className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isLogoUploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
+                          </span>
+                        </button>
                         <div>
-                          <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                           <Button type="button" variant="outline" disabled={isLogoUploading} onClick={() => logoInputRef.current?.click()}>
                             {isLogoUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Subiendo...</> : <><Camera className="w-4 h-4 mr-2" /> Cambiar Logo</>}
                           </Button>
