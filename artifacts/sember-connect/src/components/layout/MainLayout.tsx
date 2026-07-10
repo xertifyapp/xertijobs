@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLogout, getGetCurrentUserQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogIn, LogOut, User2 } from "lucide-react";
+import semberLogo from "@/assets/sember-logo.png";
+import xertifyLogo from "@assets/logo-xertify_1783685033241.png";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -27,7 +29,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
-              <span className="font-bold text-xl tracking-tight text-primary">SEMBER</span>
+              <img src={semberLogo} alt="SEMBER" className="h-11 w-auto object-contain" />
               <span className="text-xl text-muted-foreground">CONNECT</span>
             </Link>
             <nav className="hidden md:flex gap-6">
@@ -76,7 +78,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <footer className="border-t bg-muted/40 py-12">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="font-bold text-xl tracking-tight text-primary mb-4">SEMBER CONNECT</div>
+            <img src={semberLogo} alt="SEMBER" className="h-12 w-auto object-contain mb-4" />
             <p className="text-sm text-muted-foreground">
               Conectando talento con oportunidades en todo el mundo.
             </p>
@@ -101,6 +103,15 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               <span className="text-sm text-muted-foreground cursor-pointer hover:text-primary">Términos de Uso</span>
               <span className="text-sm text-muted-foreground cursor-pointer hover:text-primary">Privacidad</span>
             </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 mt-10 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} SEMBER CONNECT. Todos los derechos reservados.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Powered By</span>
+            <img src={xertifyLogo} alt="Xertify" className="h-5 w-auto object-contain" />
           </div>
         </div>
       </footer>
