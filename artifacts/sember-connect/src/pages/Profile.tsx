@@ -88,7 +88,13 @@ export default function Profile() {
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (res) => {
       form.setValue("avatarUrl", res.objectPath, { shouldDirty: true });
-      toast({ title: "Foto cargada. Guarda los cambios para aplicarla." });
+      updateProfile.mutate({ id: professionalId, data: { avatarUrl: res.objectPath } }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetProfessionalQueryKey(professionalId) });
+          toast({ title: "Foto de perfil actualizada" });
+        },
+        onError: () => toast({ title: "Error al guardar la foto", variant: "destructive" }),
+      });
     },
     onError: () => toast({ title: "Error al subir la foto", variant: "destructive" }),
   });
@@ -139,14 +145,24 @@ export default function Profile() {
     <MainLayout>
       <div className="bg-muted/30 border-b">
         <div className="container mx-auto px-4 py-12">
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              title="Cambiar foto de perfil"
+              className="group relative w-24 h-24 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden cursor-pointer"
+            >
               {currentAvatar ? (
                 <img src={objectUrl(currentAvatar)} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
                 <User2 className="w-12 h-12" />
               )}
-            </div>
+              <span className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUploading ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
+              </span>
+            </button>
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold mb-2">{profile.name}</h1>
               <p className="text-xl text-muted-foreground mb-4">{profile.headline || "Profesional en la red SEMBER"}</p>
@@ -240,7 +256,6 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                         <Button type="button" variant="outline" disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
                           {isUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Subiendo...</> : <><Camera className="w-4 h-4 mr-2" /> Cambiar Foto</>}
                         </Button>
