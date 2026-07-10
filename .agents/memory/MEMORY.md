@@ -1,1 +1,2 @@
 - [OpenAPI/Orval codegen quirks](openapi-orval-quirks.md) — `format: email` and `format: uri` break Orval Zod generation; use plain strings and validate server-side.
+- [Dev vs prod databases](env-dev-prod-databases.md) — dev and deployed prod use SEPARATE DBs; prod is read-only to the agent; self-heal prod data via idempotent startup bootstrap.

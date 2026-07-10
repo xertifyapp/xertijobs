@@ -69,6 +69,7 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 - Workflow names: `artifacts/api-server: API Server` and `artifacts/sember-connect: web`.
 - connect-pg-simple `createTableIfMissing: true` fails in the esbuild bundle (missing `dist/table.sql`) — the `session` table is defined in the Drizzle schema instead and created via `db push`; keep `createTableIfMissing: false`.
 - CORS is an allowlist built from `REPLIT_DOMAINS` + `REPLIT_DEV_DOMAIN` (credentials enabled only for those origins).
+- Dev and deployed production use SEPARATE databases. The seed only runs in dev, so production's demo/test accounts (admin/empresa/postulante @sember.com) can be left unverified and blocked at login with `email_no_verificado`. `api-server/src/lib/bootstrap.ts` (`ensureDemoAccountsVerified`, called on server startup) idempotently sets `email_verified_at` for those known demo emails when null, so the demo logins self-heal on every deploy/publish. Real users are unaffected.
 
 ## Pointers
 
