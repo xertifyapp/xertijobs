@@ -1,14 +1,15 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useUpdateApplication, useCreateOpportunity, useUpdateOpportunity, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey, getListOrganizationsQueryKey } from "@workspace/api-client-react";
+import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useUpdateApplication, useCreateOpportunity, useUpdateOpportunity, useGetOrganization, useUpdateOrganization, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey, getListOrganizationsQueryKey, getGetOrganizationQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useUpload } from "@workspace/object-storage-web";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STATUS_COLORS, OPPORTUNITY_TYPES, MODALITIES } from "@/lib/constants";
-import { Building2, Eye, Users, FileText, CheckCircle2, MoreVertical, MapPin, Globe, Loader2 } from "lucide-react";
+import { Building2, Eye, Users, FileText, CheckCircle2, MapPin, Globe, Loader2, Camera } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,6 +33,15 @@ const oppSchema = z.object({
   requirements: z.string().optional(),
   paid: z.boolean().default(false),
 });
+
+const orgSchema = z.object({
+  name: z.string().min(2, "El nombre es requerido"),
+  website: z.string().optional(),
+  logoUrl: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const objectUrl = (path?: string | null) => (path ? `/api/storage${path}` : undefined);
 
 export default function Panel() {
   const { user } = useAuth();
@@ -58,6 +68,53 @@ export default function Panel() {
     resolver: zodResolver(oppSchema),
     defaultValues: { title: "", type: "", modality: "", country: "", city: "", area: "", description: "", requirements: "", paid: false }
   });
+
+  const { data: currentOrg } = useGetOrganization(currentOrgId, { query: { enabled: !!currentOrgId, queryKey: getGetOrganizationQueryKey(currentOrgId) } });
+  const updateOrg = useUpdateOrganization();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const orgForm = useForm<z.infer<typeof orgSchema>>({
+    resolver: zodResolver(orgSchema),
+    defaultValues: { name: "", website: "", logoUrl: "", description: "" }
+  });
+
+  useEffect(() => {
+    if (currentOrg) {
+      orgForm.reset({
+        name: currentOrg.name || "",
+        website: currentOrg.website || "",
+        logoUrl: currentOrg.logoUrl || "",
+        description: currentOrg.description || "",
+      });
+    }
+  }, [currentOrg, orgForm]);
+
+  const { uploadFile: uploadLogo, isUploading: isLogoUploading } = useUpload({
+    onSuccess: (res) => {
+      orgForm.setValue("logoUrl", res.objectPath, { shouldDirty: true });
+      toast({ title: "Logo cargado. Guarda los cambios para aplicarlo." });
+    },
+    onError: () => toast({ title: "Error al subir el logo", variant: "destructive" }),
+  });
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadLogo(file);
+    e.target.value = "";
+  };
+
+  const onOrgSubmit = (values: z.infer<typeof orgSchema>) => {
+    updateOrg.mutate({ id: currentOrgId, data: values }, {
+      onSuccess: () => {
+        toast({ title: "Perfil de la organización actualizado" });
+        queryClient.invalidateQueries({ queryKey: getGetOrganizationQueryKey(currentOrgId) });
+        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) });
+      },
+      onError: () => toast({ title: "Error al actualizar el perfil", variant: "destructive" }),
+    });
+  };
+
+  const currentLogo = orgForm.watch("logoUrl") || currentOrg?.logoUrl;
 
   const handleUpdateStatus = (appId: number, newStatus: string) => {
     updateApp.mutate({ id: appId, data: { status: newStatus } }, {
@@ -186,6 +243,7 @@ export default function Panel() {
             <TabsList>
               <TabsTrigger value="applications">Postulaciones Recibidas</TabsTrigger>
               <TabsTrigger value="opportunities">Gestionar Oportunidades</TabsTrigger>
+              <TabsTrigger value="profile">Perfil de la Organización</TabsTrigger>
             </TabsList>
 
             <TabsContent value="applications" className="mt-6">
@@ -332,6 +390,52 @@ export default function Panel() {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="profile" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Perfil de la Organización</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Form {...orgForm}>
+                    <form onSubmit={orgForm.handleSubmit(onOrgSubmit)} className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 rounded-lg bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden border">
+                          {currentLogo ? (
+                            <img src={objectUrl(currentLogo)} alt="Logo" className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 className="w-10 h-10" />
+                          )}
+                        </div>
+                        <div>
+                          <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                          <Button type="button" variant="outline" disabled={isLogoUploading} onClick={() => logoInputRef.current?.click()}>
+                            {isLogoUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Subiendo...</> : <><Camera className="w-4 h-4 mr-2" /> Cambiar Logo</>}
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">JPG, PNG o GIF. Máximo 10MB.</p>
+                        </div>
+                      </div>
+
+                      <FormField control={orgForm.control} name="name" render={({ field }) => (
+                        <FormItem><FormLabel>Nombre de la Organización</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+
+                      <FormField control={orgForm.control} name="website" render={({ field }) => (
+                        <FormItem><FormLabel className="flex items-center gap-2"><Globe className="h-4 w-4" /> Sitio Web</FormLabel><FormControl><Input placeholder="https://tuorganizacion.com" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+
+                      <FormField control={orgForm.control} name="description" render={({ field }) => (
+                        <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+
+                      <Button type="submit" disabled={updateOrg.isPending}>
+                        {updateOrg.isPending ? "Guardando..." : "Guardar Cambios"}
+                      </Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </TabsContent>

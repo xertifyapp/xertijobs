@@ -13,6 +13,7 @@ export interface OrganizationUpdate {
   country?: string;
   city?: string;
   website?: string;
+  logoUrl?: string;
   description?: string;
   contactEmail?: string;
   status?: string;

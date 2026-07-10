@@ -27,6 +27,8 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 
 - `lib/api-spec/openapi.yaml` — source of truth for the API contract
 - `lib/db/src/schema/` — Drizzle tables (one file per table): organizations, opportunities, professionals, applications, savedOpportunities, users, sessions, emailOtps
+- `artifacts/api-server/src/lib/objectStorage.ts` + `objectAcl.ts` — Object Storage service (Replit GCS sidecar); `src/routes/storage.ts` — upload URL + object serving routes
+- `lib/object-storage-web/` — client upload lib (`useUpload` hook, `ObjectUploader`)
 - `artifacts/api-server/src/routes/` — Express routers per domain, re-exported in `routes/index.ts` (incl. `auth.ts`)
 - `artifacts/api-server/src/lib/session.ts` — express-session + connect-pg-simple setup; `src/middlewares/auth.ts` — `requireAuth` / `requireRole`
 - `artifacts/api-server/src/lib/serialize.ts` — `serializeDates` helper (Date → ISO string) used before Zod response parsing
@@ -46,6 +48,8 @@ Plataforma SaaS que conecta universidades, empresas, gobiernos y ONGs con profes
 - `GET /opportunities/:id` increments the `views` counter.
 - Applications have a DB unique constraint (opportunityId, professionalId); duplicates return 409.
 - Recent activity is derived from recent rows across tables, not a separate events table.
+- Object Storage (Replit GCS sidecar) stores profile media. `POST /storage/uploads/request-url` requires auth (`requireAuth`) and validates contentType (JPG/PNG/GIF/WebP) + size (≤10MB) before issuing a presigned PUT URL. `GET /storage/objects/*` serves objects publicly on purpose (avatars/logos display on public profiles + org directory). Client uses `useUpload` (basePath `/api/storage`); images are rendered via `objectUrl(path) = /api/storage${objectPath}`.
+- Profile media fields: professionals have `avatarUrl` + social links (`instagram`, `linkedin`, `x`, `tiktok`); organizations have `logoUrl` (+ existing `website`). Postulantes edit these in /perfil; empresas edit logo/website/name/description in /panel (Perfil tab). New fields persist automatically through the existing PATCH handlers via `parsed.data`.
 
 ## Product
 

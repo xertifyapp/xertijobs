@@ -31,6 +31,7 @@ export interface OrganizationInput {
   country: string;
   city?: string;
   website?: string;
+  logoUrl?: string;
   description?: string;
   contactEmail?: string;
 }
@@ -94,6 +95,8 @@ export interface Organization {
   /** @nullable */
   website?: string | null;
   /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
   description?: string | null;
   /** @nullable */
   contactEmail?: string | null;
@@ -109,6 +112,7 @@ export interface OrganizationUpdate {
   country?: string;
   city?: string;
   website?: string;
+  logoUrl?: string;
   description?: string;
   contactEmail?: string;
   status?: string;
@@ -218,6 +222,16 @@ export interface Professional {
   countriesOfInterest?: string[];
   /** @nullable */
   preferredModality?: string | null;
+  /** @nullable */
+  avatarUrl?: string | null;
+  /** @nullable */
+  instagram?: string | null;
+  /** @nullable */
+  linkedin?: string | null;
+  /** @nullable */
+  x?: string | null;
+  /** @nullable */
+  tiktok?: string | null;
   createdAt: string;
 }
 
@@ -237,6 +251,11 @@ export interface ProfessionalInput {
   internationalAvailability?: boolean;
   countriesOfInterest?: string[];
   preferredModality?: string;
+  avatarUrl?: string;
+  instagram?: string;
+  linkedin?: string;
+  x?: string;
+  tiktok?: string;
 }
 
 export interface ProfessionalUpdate {
@@ -255,6 +274,11 @@ export interface ProfessionalUpdate {
   internationalAvailability?: boolean;
   countriesOfInterest?: string[];
   preferredModality?: string;
+  avatarUrl?: string;
+  instagram?: string;
+  linkedin?: string;
+  x?: string;
+  tiktok?: string;
 }
 
 export interface SavedOpportunity {
@@ -335,6 +359,36 @@ export interface ActivityItem {
   /** @nullable */
   subtitle?: string | null;
   createdAt: string;
+}
+
+export interface UploadUrlRequest {
+  /**
+     * Original file name.
+     * @minLength 1
+     */
+  name: string;
+  /**
+     * File size in bytes.
+     * @minimum 1
+     */
+  size: number;
+  /**
+     * MIME type of the file (e.g. `image/jpeg`).
+     * @minLength 1
+     */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  /** Presigned GCS URL for PUT upload. */
+  uploadURL: string;
+  /** Normalized object path (e.g. `/objects/uploads/uuid`). Store this in your database. */
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export type ListOrganizationsParams = {

@@ -12,11 +12,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Globe, Mail, User2, Briefcase, GraduationCap, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { MapPin, Mail, User2, ExternalLink, Camera, Loader2 } from "lucide-react";
+import { FaInstagram, FaLinkedin, FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUpload } from "@workspace/object-storage-web";
+
+const objectUrl = (path?: string | null) => (path ? `/api/storage${path}` : undefined);
 
 const profileSchema = z.object({
   name: z.string().min(2, "El nombre es requerido"),
@@ -26,6 +30,11 @@ const profileSchema = z.object({
   bio: z.string().optional(),
   education: z.string().optional(),
   experience: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  instagram: z.string().optional(),
+  linkedin: z.string().optional(),
+  x: z.string().optional(),
+  tiktok: z.string().optional(),
 });
 
 function SavedOppCard({ oppId }: { oppId: number }) {
@@ -56,6 +65,8 @@ export default function Profile() {
   const { data: applications, isLoading: isAppsLoading } = useListApplications({ professionalId }, { query: { enabled: !!professionalId, queryKey: getListApplicationsQueryKey({ professionalId }) } });
   const { data: savedOpps, isLoading: isSavedLoading } = useListSavedOpportunities(professionalId, { query: { enabled: !!professionalId, queryKey: getListSavedOpportunitiesQueryKey(professionalId) } });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -66,8 +77,27 @@ export default function Profile() {
       bio: "",
       education: "",
       experience: "",
+      avatarUrl: "",
+      instagram: "",
+      linkedin: "",
+      x: "",
+      tiktok: "",
     },
   });
+
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (res) => {
+      form.setValue("avatarUrl", res.objectPath, { shouldDirty: true });
+      toast({ title: "Foto cargada. Guarda los cambios para aplicarla." });
+    },
+    onError: () => toast({ title: "Error al subir la foto", variant: "destructive" }),
+  });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
+    e.target.value = "";
+  };
 
   useEffect(() => {
     if (profile) {
@@ -79,6 +109,11 @@ export default function Profile() {
         bio: profile.bio || "",
         education: profile.education || "",
         experience: profile.experience || "",
+        avatarUrl: profile.avatarUrl || "",
+        instagram: profile.instagram || "",
+        linkedin: profile.linkedin || "",
+        x: profile.x || "",
+        tiktok: profile.tiktok || "",
       });
     }
   }, [profile, form]);
@@ -95,6 +130,8 @@ export default function Profile() {
     });
   };
 
+  const currentAvatar = form.watch("avatarUrl") || profile?.avatarUrl;
+
   if (isProfileLoading) return <MainLayout><div className="py-20 text-center">Cargando perfil...</div></MainLayout>;
   if (!profile) return <MainLayout><div className="py-20 text-center">Perfil no encontrado.</div></MainLayout>;
 
@@ -103,8 +140,12 @@ export default function Profile() {
       <div className="bg-muted/30 border-b">
         <div className="container mx-auto px-4 py-12">
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0">
-              <User2 className="w-12 h-12" />
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden">
+              {currentAvatar ? (
+                <img src={objectUrl(currentAvatar)} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                <User2 className="w-12 h-12" />
+              )}
             </div>
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold mb-2">{profile.name}</h1>
@@ -113,6 +154,14 @@ export default function Profile() {
                 <div className="flex items-center gap-1"><Mail className="h-4 w-4" /> {profile.email}</div>
                 <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {profile.city ? `${profile.city}, ` : ''}{profile.country || 'Ubicación no especificada'}</div>
               </div>
+              {(profile.instagram || profile.linkedin || profile.x || profile.tiktok) && (
+                <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
+                  {profile.instagram && <a href={profile.instagram} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><FaInstagram className="h-5 w-5" /></a>}
+                  {profile.linkedin && <a href={profile.linkedin} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><FaLinkedin className="h-5 w-5" /></a>}
+                  {profile.x && <a href={profile.x} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><FaXTwitter className="h-5 w-5" /></a>}
+                  {profile.tiktok && <a href={profile.tiktok} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><FaTiktok className="h-5 w-5" /></a>}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -182,6 +231,23 @@ export default function Profile() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden">
+                        {currentAvatar ? (
+                          <img src={objectUrl(currentAvatar)} alt="Foto de perfil" className="w-full h-full object-cover" />
+                        ) : (
+                          <User2 className="w-10 h-10" />
+                        )}
+                      </div>
+                      <div>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                        <Button type="button" variant="outline" disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
+                          {isUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Subiendo...</> : <><Camera className="w-4 h-4 mr-2" /> Cambiar Foto</>}
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-2">JPG, PNG o GIF. Máximo 10MB.</p>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField control={form.control} name="name" render={({ field }) => (
                         <FormItem><FormLabel>Nombre Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -208,6 +274,24 @@ export default function Profile() {
                     <FormField control={form.control} name="experience" render={({ field }) => (
                       <FormItem><FormLabel>Experiencia Profesional</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
+
+                    <div className="pt-2">
+                      <h3 className="text-sm font-semibold mb-4">Redes Sociales</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField control={form.control} name="instagram" render={({ field }) => (
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaInstagram className="h-4 w-4" /> Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="linkedin" render={({ field }) => (
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaLinkedin className="h-4 w-4" /> LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="x" render={({ field }) => (
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaXTwitter className="h-4 w-4" /> X (Twitter)</FormLabel><FormControl><Input placeholder="https://x.com/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="tiktok" render={({ field }) => (
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaTiktok className="h-4 w-4" /> TikTok</FormLabel><FormControl><Input placeholder="https://tiktok.com/@tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                    </div>
 
                     <Button type="submit" disabled={updateProfile.isPending}>
                       {updateProfile.isPending ? "Guardando..." : "Guardar Cambios"}

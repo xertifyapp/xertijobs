@@ -15,6 +15,8 @@ tags:
   - name: professionals
   - name: applications
   - name: stats
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -579,6 +581,109 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ActivityItem"
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      description: |
+        Returns a presigned GCS URL for direct upload. The client sends JSON
+        metadata here, then uploads the file directly to the returned URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      description: |
+        Unconditionally public — no authentication or ACL checks.
+        Searches PUBLIC_OBJECT_SEARCH_PATHS for the given file path.
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Relative file path within the public search paths.
+      responses:
+        '200':
+          description: Object content streamed with correct Content-Type.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to serve public object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an object entity from PRIVATE_OBJECT_DIR
+      description: |
+        Serves object entities uploaded via presigned URLs. These can optionally
+        be protected with authentication or ACL checks based on the use case.
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Object path within the private object dir (e.g. `uploads/some-uuid`).
+      responses:
+        '200':
+          description: Object content streamed with correct Content-Type.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Object not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to serve object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
 components:
   schemas:
     HealthStatus:
@@ -647,6 +752,7 @@ components:
         country: { type: string }
         city: { type: ["string", "null"] }
         website: { type: ["string", "null"] }
+        logoUrl: { type: ["string", "null"] }
         description: { type: ["string", "null"] }
         contactEmail: { type: ["string", "null"] }
         status: { type: string, description: "pendiente | aprobada | rechazada" }
@@ -660,6 +766,7 @@ components:
         country: { type: string }
         city: { type: string }
         website: { type: string }
+        logoUrl: { type: string }
         description: { type: string }
         contactEmail: { type: string }
     OrganizationUpdate:
@@ -670,6 +777,7 @@ components:
         country: { type: string }
         city: { type: string }
         website: { type: string }
+        logoUrl: { type: string }
         description: { type: string }
         contactEmail: { type: string }
         status: { type: string }
@@ -778,6 +886,11 @@ components:
           type: array
           items: { type: string }
         preferredModality: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
+        instagram: { type: ["string", "null"] }
+        linkedin: { type: ["string", "null"] }
+        x: { type: ["string", "null"] }
+        tiktok: { type: ["string", "null"] }
         createdAt: { type: string }
     ProfessionalInput:
       type: object
@@ -805,6 +918,11 @@ components:
           type: array
           items: { type: string }
         preferredModality: { type: string }
+        avatarUrl: { type: string }
+        instagram: { type: string }
+        linkedin: { type: string }
+        x: { type: string }
+        tiktok: { type: string }
     ProfessionalUpdate:
       type: object
       properties:
@@ -830,6 +948,11 @@ components:
           type: array
           items: { type: string }
         preferredModality: { type: string }
+        avatarUrl: { type: string }
+        instagram: { type: string }
+        linkedin: { type: string }
+        x: { type: string }
+        tiktok: { type: string }
     SavedOpportunity:
       type: object
       required: [id, professionalId, opportunityId]
@@ -927,3 +1050,37 @@ components:
         title: { type: string }
         subtitle: { type: ["string", "null"] }
         createdAt: { type: string }
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Original file name.
+        size:
+          type: integer
+          minimum: 1
+          description: File size in bytes.
+        contentType:
+          type: string
+          minLength: 1
+          description: MIME type of the file (e.g. `image/jpeg`).
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          description: Presigned GCS URL for PUT upload.
+        objectPath:
+          type: string
+          description: Normalized object path (e.g. `/objects/uploads/uuid`). Store this in your database.
+        metadata:
+          $ref: '#/components/schemas/UploadUrlRequest'
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

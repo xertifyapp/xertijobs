@@ -30,5 +30,15 @@ export interface Professional {
   countriesOfInterest?: string[];
   /** @nullable */
   preferredModality?: string | null;
+  /** @nullable */
+  avatarUrl?: string | null;
+  /** @nullable */
+  instagram?: string | null;
+  /** @nullable */
+  linkedin?: string | null;
+  /** @nullable */
+  x?: string | null;
+  /** @nullable */
+  tiktok?: string | null;
   createdAt: string;
 }

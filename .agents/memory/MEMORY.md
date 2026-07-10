@@ -1,1 +1,1 @@
-- [OpenAPI/Orval codegen quirks](openapi-orval-quirks.md) — `format: email` breaks Orval Zod generation; use minLength and validate server-side.
+- [OpenAPI/Orval codegen quirks](openapi-orval-quirks.md) — `format: email` and `format: uri` break Orval Zod generation; use plain strings and validate server-side.

@@ -22,4 +22,9 @@ export interface ProfessionalUpdate {
   internationalAvailability?: boolean;
   countriesOfInterest?: string[];
   preferredModality?: string;
+  avatarUrl?: string;
+  instagram?: string;
+  linkedin?: string;
+  x?: string;
+  tiktok?: string;
 }

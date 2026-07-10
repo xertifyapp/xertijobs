@@ -17,6 +17,8 @@ export interface Organization {
   /** @nullable */
   website?: string | null;
   /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
   description?: string | null;
   /** @nullable */
   contactEmail?: string | null;

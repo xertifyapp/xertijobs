@@ -9,6 +9,7 @@ export const organizationsTable = pgTable("organizations", {
   country: text("country").notNull(),
   city: text("city"),
   website: text("website"),
+  logoUrl: text("logo_url"),
   description: text("description"),
   contactEmail: text("contact_email"),
   status: text("status").notNull().default("pendiente"),

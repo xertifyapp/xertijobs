@@ -18,6 +18,11 @@ export const professionalsTable = pgTable("professionals", {
   internationalAvailability: boolean("international_availability"),
   countriesOfInterest: text("countries_of_interest").array().notNull().default([]),
   preferredModality: text("preferred_modality"),
+  avatarUrl: text("avatar_url"),
+  instagram: text("instagram"),
+  linkedin: text("linkedin"),
+  x: text("x"),
+  tiktok: text("tiktok"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

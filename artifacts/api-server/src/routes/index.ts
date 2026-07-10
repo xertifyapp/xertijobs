@@ -6,6 +6,7 @@ import opportunitiesRouter from "./opportunities";
 import professionalsRouter from "./professionals";
 import applicationsRouter from "./applications";
 import statsRouter from "./stats";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(opportunitiesRouter);
 router.use(professionalsRouter);
 router.use(applicationsRouter);
 router.use(statsRouter);
+router.use(storageRouter);
 
 export default router;
