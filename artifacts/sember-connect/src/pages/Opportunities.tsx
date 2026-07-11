@@ -1,71 +1,64 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useListOpportunities } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Globe, Filter, Briefcase } from "lucide-react";
-import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, MapPin, Globe, Briefcase, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDomainLabels } from "@/lib/constants";
+import { OpportunityFilters } from "@/components/OpportunityFilters";
+import {
+  EMPTY_FILTERS,
+  parseFilters,
+  buildSearchString,
+  hasActiveFilters,
+  toApiParams,
+  type OpportunityFilters as Filters,
+} from "@/lib/opportunityFilters";
 
 export default function Opportunities() {
   const { t } = useTranslation();
-  const { opportunityTypes, modalities, opportunityTypeLabel, modalityLabel } = useDomainLabels();
-  const [search, setSearch] = useState("");
-  const [type, setType] = useState<string>("all");
-  const [modality, setModality] = useState<string>("all");
+  const [, navigate] = useLocation();
+  const search = useSearch();
+  const { opportunityTypeLabel, modalityLabel } = useDomainLabels();
 
-  const { data: opportunities, isLoading } = useListOpportunities({
-    status: "activa",
-    ...(search && { search }),
-    ...(type !== "all" && { type }),
-    ...(modality !== "all" && { modality }),
-  });
+  const [filters, setFilters] = useState<Filters>(() => parseFilters(search));
+
+  // Keep filters in sync when the URL query string changes (e.g. arriving from
+  // the home search or using the browser back/forward buttons).
+  useEffect(() => {
+    setFilters(parseFilters(search));
+  }, [search]);
+
+  const setFilter = (key: keyof Filters, value: string) => {
+    const next = { ...filters, [key]: value };
+    setFilters(next);
+    const qs = buildSearchString(next);
+    navigate(qs ? `/oportunidades?${qs}` : "/oportunidades", { replace: true });
+  };
+  const handleClear = () => {
+    setFilters(EMPTY_FILTERS);
+    navigate("/oportunidades", { replace: true });
+  };
+
+  const { data: opportunities, isLoading } = useListOpportunities(toApiParams(filters));
 
   return (
     <MainLayout>
       <div className="bg-muted/30 border-b">
         <div className="container mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold mb-6">{t("opportunities.list.title")}</h1>
-          
-          <div className="flex flex-col md:flex-row gap-4 max-w-4xl">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input 
-                placeholder={t("opportunities.list.searchPlaceholder")} 
-                className="pl-10 h-12 text-lg bg-background"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="w-full md:w-[200px] h-12 bg-background">
-                <SelectValue placeholder={t("opportunities.list.typePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("opportunities.list.allTypes")}</SelectItem>
-                {opportunityTypes.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={modality} onValueChange={setModality}>
-              <SelectTrigger className="w-full md:w-[200px] h-12 bg-background">
-                <SelectValue placeholder={t("opportunities.list.modalityPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("opportunities.list.allModalities")}</SelectItem>
-                {modalities.map(m => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-4xl font-bold">{t("opportunities.list.title")}</h1>
+            {hasActiveFilters(filters) && (
+              <Button variant="ghost" onClick={handleClear}>
+                <X className="mr-2 h-4 w-4" /> {t("search.clearButton")}
+              </Button>
+            )}
           </div>
+
+          <OpportunityFilters values={filters} onChange={setFilter} />
         </div>
       </div>
 

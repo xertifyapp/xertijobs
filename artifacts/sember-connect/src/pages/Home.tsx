@@ -1,19 +1,36 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useListOpportunities, useListOrganizations } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Globe, Briefcase, GraduationCap, Building2, MapPin, ArrowRight } from "lucide-react";
+import { Search, Globe, Briefcase, GraduationCap, Building2, MapPin, ArrowRight, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import { useDomainLabels } from "@/lib/constants";
+import { OpportunityFilters } from "@/components/OpportunityFilters";
+import {
+  EMPTY_FILTERS,
+  buildSearchString,
+  hasActiveFilters,
+  type OpportunityFilters as Filters,
+} from "@/lib/opportunityFilters";
 
 export default function Home() {
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
   const { opportunityTypeLabel, modalityLabel } = useDomainLabels();
   const { data: opportunities } = useListOpportunities({ status: "activa" });
   const { data: organizations } = useListOrganizations({ status: "verificada" });
+
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const setFilter = (key: keyof Filters, value: string) =>
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  const handleSearch = () => {
+    const qs = buildSearchString(filters);
+    navigate(qs ? `/oportunidades?${qs}` : "/oportunidades");
+  };
+  const handleClear = () => setFilters(EMPTY_FILTERS);
 
   const recentOpps = opportunities?.slice(0, 6) || [];
   const featuredOrgs = organizations?.slice(0, 4) || [];
@@ -35,17 +52,43 @@ export default function Home() {
               {t("home.hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/oportunidades">
-                <Button size="lg" className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8 h-14">
-                  {t("home.hero.exploreCta")} <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
               <Link href="/registro?tipo=empresa">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-14 bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-white">
                   {t("home.hero.institutionCta")}
                 </Button>
               </Link>
             </div>
+          </div>
+
+          {/* Buscador inteligente */}
+          <div className="mt-12">
+            <Card className="border-none shadow-2xl">
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-foreground">{t("search.title")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("search.subtitle")}</p>
+                </div>
+                <OpportunityFilters values={filters} onChange={setFilter} onSubmit={handleSearch} />
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <Button
+                    size="lg"
+                    className="w-full sm:flex-1 bg-accent text-accent-foreground hover:bg-accent/90 h-12"
+                    onClick={handleSearch}
+                  >
+                    <Search className="mr-2 h-5 w-5" /> {t("search.searchButton")}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto h-12"
+                    onClick={handleClear}
+                    disabled={!hasActiveFilters(filters)}
+                  >
+                    <X className="mr-2 h-4 w-4" /> {t("search.clearButton")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

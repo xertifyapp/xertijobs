@@ -78,6 +78,7 @@ router.get("/opportunities", async (req, res): Promise<void> => {
   if (q.city) conditions.push(ilike(opportunitiesTable.city, q.city));
   if (q.modality) conditions.push(eq(opportunitiesTable.modality, q.modality));
   if (q.area) conditions.push(ilike(opportunitiesTable.area, `%${q.area}%`));
+  if (q.language) conditions.push(ilike(opportunitiesTable.language, q.language));
   if (q.organizationId !== undefined) conditions.push(eq(opportunitiesTable.organizationId, q.organizationId));
   if (q.status) conditions.push(eq(opportunitiesTable.status, q.status));
   if (q.search) {

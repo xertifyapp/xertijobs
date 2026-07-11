@@ -36,6 +36,26 @@
     "backToHome": "Voltar ao início",
     "visitWebsite": "Visitar site"
   },
+  "search": {
+    "title": "Busca inteligente",
+    "subtitle": "Filtre por palavra-chave, país, modalidade, área, tipo de oportunidade e idioma.",
+    "searchButton": "Buscar",
+    "clearButton": "Limpar filtros",
+    "fields": {
+      "keyword": "Palavra-chave",
+      "keywordPlaceholder": "Palavra-chave, cargo, empresa...",
+      "country": "País",
+      "allCountries": "Todos os países",
+      "modality": "Modalidade",
+      "allModalities": "Todas as modalidades",
+      "area": "Área",
+      "allAreas": "Todas as áreas",
+      "type": "Tipo de oportunidade",
+      "allTypes": "Todos os tipos",
+      "language": "Idioma",
+      "allLanguages": "Todos os idiomas"
+    }
+  },
   "notFound": {
     "title": "404 Página não encontrada",
     "description": "Você esqueceu de adicionar a página ao roteador?"

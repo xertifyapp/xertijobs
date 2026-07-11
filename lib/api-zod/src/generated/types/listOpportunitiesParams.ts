@@ -12,6 +12,7 @@ country?: string;
 city?: string;
 modality?: string;
 area?: string;
+language?: string;
 organizationId?: number;
 status?: string;
 search?: string;

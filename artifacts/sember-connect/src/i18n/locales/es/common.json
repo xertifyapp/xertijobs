@@ -40,6 +40,26 @@
     "title": "404 Página no encontrada",
     "description": "¿Olvidaste agregar la página al enrutador?"
   },
+  "search": {
+    "title": "Buscador inteligente",
+    "subtitle": "Filtra por palabra clave, país, modalidad, área, tipo de oportunidad e idioma.",
+    "searchButton": "Buscar",
+    "clearButton": "Limpiar filtros",
+    "fields": {
+      "keyword": "Palabra clave",
+      "keywordPlaceholder": "Palabra clave, cargo, empresa...",
+      "country": "País",
+      "allCountries": "Todos los países",
+      "modality": "Modalidad",
+      "allModalities": "Toda modalidad",
+      "area": "Área",
+      "allAreas": "Todas las áreas",
+      "type": "Tipo de oportunidad",
+      "allTypes": "Todos los tipos",
+      "language": "Idioma",
+      "allLanguages": "Todos los idiomas"
+    }
+  },
   "enums": {
     "opportunityType": {
       "internship": "Pasantía",

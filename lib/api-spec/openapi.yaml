@@ -263,6 +263,9 @@ paths:
         - name: area
           in: query
           schema: { type: string }
+        - name: language
+          in: query
+          schema: { type: string }
         - name: organizationId
           in: query
           schema: { type: integer }

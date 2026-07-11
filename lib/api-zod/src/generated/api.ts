@@ -294,6 +294,7 @@ export const ListOpportunitiesQueryParams = zod.object({
   "city": zod.coerce.string().optional(),
   "modality": zod.coerce.string().optional(),
   "area": zod.coerce.string().optional(),
+  "language": zod.coerce.string().optional(),
   "organizationId": zod.coerce.number().optional(),
   "status": zod.coerce.string().optional(),
   "search": zod.coerce.string().optional()

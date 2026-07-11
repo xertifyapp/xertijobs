@@ -36,6 +36,26 @@
     "backToHome": "Back to home",
     "visitWebsite": "Visit website"
   },
+  "search": {
+    "title": "Smart search",
+    "subtitle": "Filter by keyword, country, modality, area, opportunity type and language.",
+    "searchButton": "Search",
+    "clearButton": "Clear filters",
+    "fields": {
+      "keyword": "Keyword",
+      "keywordPlaceholder": "Keyword, role, company...",
+      "country": "Country",
+      "allCountries": "All countries",
+      "modality": "Modality",
+      "allModalities": "All modalities",
+      "area": "Area",
+      "allAreas": "All areas",
+      "type": "Opportunity type",
+      "allTypes": "All types",
+      "language": "Language",
+      "allLanguages": "All languages"
+    }
+  },
   "notFound": {
     "title": "404 Page Not Found",
     "description": "Did you forget to add the page to the router?"
