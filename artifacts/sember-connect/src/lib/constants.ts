@@ -37,6 +37,15 @@ export const ORGANIZATION_STATUS_VALUES = [
   "rechazada",
 ] as const;
 
+export const APPLICATION_STATUS_VALUES = [
+  "enviada",
+  "en_revision",
+  "preseleccionado",
+  "entrevista",
+  "aceptado",
+  "rechazado",
+] as const;
+
 export type DomainOption = { value: string; label: string };
 
 /**
@@ -92,6 +101,7 @@ export const STATUS_COLORS: Record<string, string> = {
   enviada: "bg-blue-100 text-blue-800 border-blue-200",
   en_revision: "bg-yellow-100 text-yellow-800 border-yellow-200",
   preseleccionado: "bg-purple-100 text-purple-800 border-purple-200",
+  entrevista: "bg-indigo-100 text-indigo-800 border-indigo-200",
   aceptado: "bg-green-100 text-green-800 border-green-200",
   rechazado: "bg-red-100 text-red-800 border-red-200",
 };

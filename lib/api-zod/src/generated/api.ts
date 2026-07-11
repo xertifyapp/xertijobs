@@ -815,8 +815,9 @@ export const ListApplicationsResponseItem = zod.object({
   "professionalName": zod.string().nullish(),
   "professionalEmail": zod.string().nullish(),
   "professionalHeadline": zod.string().nullish(),
-  "status": zod.string().describe('enviada | en_revision | preseleccionado | aceptado | rechazado'),
+  "status": zod.string().describe('enviada | en_revision | preseleccionado | entrevista | aceptado | rechazado'),
   "message": zod.string().nullish(),
+  "score": zod.number().nullish().describe('Candidate score 0-100 set by the recruiter'),
   "createdAt": zod.string()
 })
 export const ListApplicationsResponse = zod.array(ListApplicationsResponseItem)
@@ -840,8 +841,9 @@ export const CreateApplicationResponse = zod.object({
   "professionalName": zod.string().nullish(),
   "professionalEmail": zod.string().nullish(),
   "professionalHeadline": zod.string().nullish(),
-  "status": zod.string().describe('enviada | en_revision | preseleccionado | aceptado | rechazado'),
+  "status": zod.string().describe('enviada | en_revision | preseleccionado | entrevista | aceptado | rechazado'),
   "message": zod.string().nullish(),
+  "score": zod.number().nullish().describe('Candidate score 0-100 set by the recruiter'),
   "createdAt": zod.string()
 })
 
@@ -853,8 +855,15 @@ export const UpdateApplicationParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const updateApplicationBodyScoreMin = 0;
+export const updateApplicationBodyScoreMax = 100;
+
+
+
 export const UpdateApplicationBody = zod.object({
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "score": zod.number().min(updateApplicationBodyScoreMin).max(updateApplicationBodyScoreMax).nullish(),
+  "note": zod.string().optional()
 })
 
 export const UpdateApplicationResponse = zod.object({
@@ -866,10 +875,28 @@ export const UpdateApplicationResponse = zod.object({
   "professionalName": zod.string().nullish(),
   "professionalEmail": zod.string().nullish(),
   "professionalHeadline": zod.string().nullish(),
-  "status": zod.string().describe('enviada | en_revision | preseleccionado | aceptado | rechazado'),
+  "status": zod.string().describe('enviada | en_revision | preseleccionado | entrevista | aceptado | rechazado'),
   "message": zod.string().nullish(),
+  "score": zod.number().nullish().describe('Candidate score 0-100 set by the recruiter'),
   "createdAt": zod.string()
 })
+
+
+/**
+ * @summary List status-change history for an application
+ */
+export const ListApplicationEventsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListApplicationEventsResponseItem = zod.object({
+  "id": zod.number(),
+  "applicationId": zod.number(),
+  "status": zod.string().describe('The status the application was moved to'),
+  "note": zod.string().nullish().describe('Optional recruiter message attached to the change'),
+  "createdAt": zod.string()
+})
+export const ListApplicationEventsResponse = zod.array(ListApplicationEventsResponseItem)
 
 
 /**

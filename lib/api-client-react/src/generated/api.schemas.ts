@@ -366,10 +366,28 @@ export interface Application {
   professionalEmail?: string | null;
   /** @nullable */
   professionalHeadline?: string | null;
-  /** enviada | en_revision | preseleccionado | aceptado | rechazado */
+  /** enviada | en_revision | preseleccionado | entrevista | aceptado | rechazado */
   status: string;
   /** @nullable */
   message?: string | null;
+  /**
+     * Candidate score 0-100 set by the recruiter
+     * @nullable
+     */
+  score?: number | null;
+  createdAt: string;
+}
+
+export interface ApplicationEvent {
+  id: number;
+  applicationId: number;
+  /** The status the application was moved to */
+  status: string;
+  /**
+     * Optional recruiter message attached to the change
+     * @nullable
+     */
+  note?: string | null;
   createdAt: string;
 }
 
@@ -381,6 +399,13 @@ export interface ApplicationInput {
 
 export interface ApplicationUpdate {
   status?: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  score?: number | null;
+  note?: string;
 }
 
 export interface CountByKey {

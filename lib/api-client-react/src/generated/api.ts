@@ -22,6 +22,7 @@ import type {
 import type {
   ActivityItem,
   Application,
+  ApplicationEvent,
   ApplicationInput,
   ApplicationUpdate,
   AuthUser,
@@ -2389,6 +2390,83 @@ export const useUpdateApplication = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateApplicationMutationOptions(options));
     }
+
+export const getListApplicationEventsUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}/events`
+}
+
+/**
+ * @summary List status-change history for an application
+ */
+export const listApplicationEvents = async (id: number, options?: RequestInit): Promise<ApplicationEvent[]> => {
+
+  return customFetch<ApplicationEvent[]>(getListApplicationEventsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListApplicationEventsQueryKey = (id: number,) => {
+    return [
+    `/api/applications/${id}/events`
+    ] as const;
+    }
+
+
+export const getListApplicationEventsQueryOptions = <TData = Awaited<ReturnType<typeof listApplicationEvents>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApplicationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListApplicationEventsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listApplicationEvents>>> = ({ signal }) => listApplicationEvents(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listApplicationEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListApplicationEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listApplicationEvents>>>
+export type ListApplicationEventsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List status-change history for an application
+ */
+
+export function useListApplicationEvents<TData = Awaited<ReturnType<typeof listApplicationEvents>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApplicationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListApplicationEventsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetGlobalStatsUrl = () => {
 

@@ -8,6 +8,7 @@
 
 export * from './activityItem';
 export * from './application';
+export * from './applicationEvent';
 export * from './applicationInput';
 export * from './applicationUpdate';
 export * from './authUser';

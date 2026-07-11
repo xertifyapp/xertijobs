@@ -8,4 +8,11 @@
 
 export interface ApplicationUpdate {
   status?: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  score?: number | null;
+  note?: string;
 }

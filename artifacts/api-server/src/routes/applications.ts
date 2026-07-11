@@ -1,9 +1,10 @@
 import { serializeDates } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { and, desc, eq, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL } from "drizzle-orm";
 import {
   db,
   applicationsTable,
+  applicationEventsTable,
   opportunitiesTable,
   organizationsTable,
   professionalsTable,
@@ -16,9 +17,12 @@ import {
   UpdateApplicationParams,
   UpdateApplicationBody,
   UpdateApplicationResponse,
+  ListApplicationEventsParams,
+  ListApplicationEventsResponse,
 } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth";
 import { t } from "../lib/i18n";
+import { sendApplicationStatusEmail } from "../lib/mailer";
 
 const router: IRouter = Router();
 
@@ -33,6 +37,7 @@ const applicationWithJoins = {
   professionalHeadline: professionalsTable.headline,
   status: applicationsTable.status,
   message: applicationsTable.message,
+  score: applicationsTable.score,
   createdAt: applicationsTable.createdAt,
 };
 
@@ -149,27 +154,44 @@ router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, r
   }
 
   const sessionUser = req.session.user;
-  if (sessionUser?.role === "empresa") {
-    const [existing] = await db
-      .select({ organizationId: opportunitiesTable.organizationId })
-      .from(applicationsTable)
-      .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
-      .where(eq(applicationsTable.id, params.data.id));
-    if (existing && existing.organizationId !== sessionUser.organizationId) {
-      res.status(403).json({ error: t(req.locale, "applications.onlyOwnOrgApplications") });
-      return;
-    }
-  }
 
-  const [updated] = await db
-    .update(applicationsTable)
-    .set(parsed.data)
-    .where(eq(applicationsTable.id, params.data.id))
-    .returning();
+  const [existing] = await db
+    .select({
+      organizationId: opportunitiesTable.organizationId,
+      status: applicationsTable.status,
+    })
+    .from(applicationsTable)
+    .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
+    .where(eq(applicationsTable.id, params.data.id));
 
-  if (!updated) {
+  if (!existing) {
     res.status(404).json({ error: t(req.locale, "applications.notFound") });
     return;
+  }
+
+  if (sessionUser?.role === "empresa" && existing.organizationId !== sessionUser.organizationId) {
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnOrgApplications") });
+    return;
+  }
+
+  // `note` is stored on the event history, not on the application row.
+  const { note, ...updateData } = parsed.data;
+  const statusChanged =
+    updateData.status !== undefined && updateData.status !== existing.status;
+
+  if (Object.keys(updateData).length > 0) {
+    await db
+      .update(applicationsTable)
+      .set(updateData)
+      .where(eq(applicationsTable.id, params.data.id));
+  }
+
+  if (statusChanged) {
+    await db.insert(applicationEventsTable).values({
+      applicationId: params.data.id,
+      status: updateData.status as string,
+      note: note ?? null,
+    });
   }
 
   const [row] = await db
@@ -178,9 +200,72 @@ router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, r
     .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
     .innerJoin(organizationsTable, eq(opportunitiesTable.organizationId, organizationsTable.id))
     .innerJoin(professionalsTable, eq(applicationsTable.professionalId, professionalsTable.id))
-    .where(eq(applicationsTable.id, updated.id));
+    .where(eq(applicationsTable.id, params.data.id));
+
+  if (statusChanged && row?.professionalEmail) {
+    // Notify the professional; never let a mail failure break the status change.
+    try {
+      await sendApplicationStatusEmail(
+        row.professionalEmail,
+        row.professionalName ?? "",
+        row.opportunityTitle ?? "",
+        row.organizationName ?? "",
+        row.status,
+        note,
+        req.locale,
+      );
+    } catch (err) {
+      req.log.error({ err, applicationId: params.data.id }, "Failed to send application status email");
+    }
+  }
 
   res.json(UpdateApplicationResponse.parse(serializeDates(row)));
+});
+
+router.get("/applications/:id/events", requireAuth, async (req, res): Promise<void> => {
+  const params = ListApplicationEventsParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+    return;
+  }
+
+  const [existing] = await db
+    .select({
+      organizationId: opportunitiesTable.organizationId,
+      professionalId: applicationsTable.professionalId,
+    })
+    .from(applicationsTable)
+    .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
+    .where(eq(applicationsTable.id, params.data.id));
+
+  if (!existing) {
+    res.status(404).json({ error: t(req.locale, "applications.notFound") });
+    return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa" && existing.organizationId !== sessionUser.organizationId) {
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnOrgApplications") });
+    return;
+  }
+  if (sessionUser?.role === "postulante" && existing.professionalId !== sessionUser.professionalId) {
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnProfile") });
+    return;
+  }
+
+  const rows = await db
+    .select({
+      id: applicationEventsTable.id,
+      applicationId: applicationEventsTable.applicationId,
+      status: applicationEventsTable.status,
+      note: applicationEventsTable.note,
+      createdAt: applicationEventsTable.createdAt,
+    })
+    .from(applicationEventsTable)
+    .where(eq(applicationEventsTable.applicationId, params.data.id))
+    .orderBy(asc(applicationEventsTable.createdAt));
+
+  res.json(ListApplicationEventsResponse.parse(serializeDates(rows)));
 });
 
 export default router;

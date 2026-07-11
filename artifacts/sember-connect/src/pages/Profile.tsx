@@ -1,6 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useGetProfessional, useUpdateProfessional, useListApplications, useListSavedOpportunities, useGetOpportunity, getGetProfessionalQueryKey, getGetOpportunityQueryKey, getListApplicationsQueryKey, getListSavedOpportunitiesQueryKey } from "@workspace/api-client-react";
-import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,11 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Mail, User2, ExternalLink, Camera, Loader2 } from "lucide-react";
+import { MapPin, Mail, User2, Camera, Loader2 } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpload } from "@workspace/object-storage-web";
+import { ApplicationPipelineCard } from "@/components/profile/ApplicationPipelineCard";
 
 const objectUrl = (path?: string | null) => (path ? `/api/storage${path}` : undefined);
 
@@ -59,8 +59,7 @@ function SavedOppCard({ oppId }: { oppId: number }) {
 }
 
 export default function Profile() {
-  const { t, i18n } = useTranslation();
-  const { applicationStatusLabel } = useDomainLabels();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -208,21 +207,7 @@ export default function Profile() {
             ) : (
               <div className="grid gap-4">
                 {applications?.map(app => (
-                  <Card key={app.id}>
-                    <CardContent className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div>
-                        <h3 className="font-bold text-lg mb-1">{app.opportunityTitle}</h3>
-                        <p className="text-muted-foreground text-sm">{app.organizationName}</p>
-                        <div className="text-xs text-muted-foreground mt-2">{t("profile.applications.appliedOn", { date: new Date(app.createdAt).toLocaleDateString(i18n.language) })}</div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Badge className={STATUS_COLORS[app.status]}>{applicationStatusLabel(app.status)}</Badge>
-                        <Link href={`/oportunidades/${app.opportunityId}`}>
-                          <Button variant="ghost" size="icon"><ExternalLink className="h-4 w-4" /></Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ApplicationPipelineCard key={app.id} app={app} />
                 ))}
               </div>
             )}

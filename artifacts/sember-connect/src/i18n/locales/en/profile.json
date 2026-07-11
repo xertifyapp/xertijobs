@@ -24,7 +24,13 @@
     "applications": {
       "loading": "Loading applications...",
       "empty": "You have no active applications.",
-      "appliedOn": "Applied on {{date}}"
+      "appliedOn": "Applied on {{date}}",
+      "viewProcess": "View process",
+      "hideProcess": "Hide process",
+      "history": "Process history",
+      "historyEmpty": "No updates yet.",
+      "noNote": "No message",
+      "score": "Score"
     },
     "saved": {
       "loading": "Loading saved...",

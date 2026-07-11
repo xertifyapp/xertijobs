@@ -24,7 +24,13 @@
     "applications": {
       "loading": "Carregando candidaturas...",
       "empty": "Você não tem candidaturas ativas.",
-      "appliedOn": "Candidatado em {{date}}"
+      "appliedOn": "Candidatado em {{date}}",
+      "viewProcess": "Ver processo",
+      "hideProcess": "Ocultar processo",
+      "history": "Histórico do processo",
+      "historyEmpty": "Ainda não há atualizações.",
+      "noNote": "Sem mensagem",
+      "score": "Pontuação"
     },
     "saved": {
       "loading": "Carregando salvos...",

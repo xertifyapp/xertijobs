@@ -52,3 +52,40 @@ export async function sendOtpEmail(
   </div>`;
   await sendEmail(to, t(locale, "email.otp.subject"), html);
 }
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export async function sendApplicationStatusEmail(
+  to: string,
+  name: string,
+  opportunityTitle: string,
+  organizationName: string,
+  status: string,
+  note: string | null | undefined,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<void> {
+  const statusLabel = t(locale, `email.appStatus.label.${status}`);
+  const noteBlock = note
+    ? `<div style="margin: 16px 0; padding: 12px 16px; background: #f4f4f8; border-left: 4px solid #1a1a2e; border-radius: 6px;">
+         <p style="margin: 0 0 4px; font-weight: bold; font-size: 13px;">${t(locale, "email.appStatus.noteLabel")}</p>
+         <p style="margin: 0; font-style: italic;">${escapeHtml(note)}</p>
+       </div>`
+    : "";
+  const html = `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+    <h2 style="color: #1a1a2e;">SEMBER CONNECT</h2>
+    <p>${t(locale, "email.appStatus.greeting", { name: escapeHtml(name) })}</p>
+    <p>${t(locale, "email.appStatus.body", { opportunity: escapeHtml(opportunityTitle), organization: escapeHtml(organizationName) })}</p>
+    <p style="font-size: 20px; font-weight: bold; text-align: center; background: #eef2ff; color: #1a1a2e; padding: 14px; border-radius: 8px;">${statusLabel}</p>
+    ${noteBlock}
+    <p>${t(locale, "email.appStatus.cta")}</p>
+    <p style="color: #888; font-size: 12px;">${t(locale, "email.appStatus.ignore")}</p>
+  </div>`;
+  await sendEmail(to, t(locale, "email.appStatus.subject"), html);
+}

@@ -24,7 +24,13 @@
     "applications": {
       "loading": "Cargando postulaciones...",
       "empty": "No tienes postulaciones activas.",
-      "appliedOn": "Postulado el {{date}}"
+      "appliedOn": "Postulado el {{date}}",
+      "viewProcess": "Ver proceso",
+      "hideProcess": "Ocultar proceso",
+      "history": "Historial del proceso",
+      "historyEmpty": "Aún no hay actualizaciones.",
+      "noNote": "Sin mensaje",
+      "score": "Puntuación"
     },
     "saved": {
       "loading": "Cargando guardados...",

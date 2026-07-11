@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useUpdateApplication, useCreateOpportunity, useUpdateOpportunity, useGetOrganization, useUpdateOrganization, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey, getListOrganizationsQueryKey, getGetOrganizationQueryKey } from "@workspace/api-client-react";
+import { useListOrganizations, useGetOrganizationStats, useListOpportunities, useListApplications, useCreateOpportunity, useUpdateOpportunity, useGetOrganization, useUpdateOrganization, getListApplicationsQueryKey, getGetOrganizationStatsQueryKey, getListOpportunitiesQueryKey, getListOrganizationsQueryKey, getGetOrganizationQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect, useRef } from "react";
 import { useUpload } from "@workspace/object-storage-web";
@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { CandidatePipeline } from "@/components/panel/CandidatePipeline";
 
 const createOppSchema = (t: (key: string) => string) => z.object({
   title: z.string().min(2, t("panel.validation.titleRequired")),
@@ -49,7 +50,7 @@ const objectUrl = (path?: string | null) => (path ? `/api/storage${path}` : unde
 
 export default function Panel() {
   const { t } = useTranslation();
-  const { opportunityTypes, modalities, applicationStatusLabel, opportunityStatusLabel, modalityLabel } = useDomainLabels();
+  const { opportunityTypes, modalities, opportunityStatusLabel, modalityLabel } = useDomainLabels();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const { data: orgs, isLoading: isOrgsLoading } = useListOrganizations({ status: "verificada" }, { query: { enabled: isAdmin, queryKey: getListOrganizationsQueryKey({ status: "verificada" }) } });
@@ -64,7 +65,6 @@ export default function Panel() {
   const { data: opportunities } = useListOpportunities({ organizationId: currentOrgId }, { query: { enabled: !!currentOrgId, queryKey: getListOpportunitiesQueryKey({ organizationId: currentOrgId }) } });
   const { data: applications } = useListApplications({ organizationId: currentOrgId }, { query: { enabled: !!currentOrgId, queryKey: getListApplicationsQueryKey({ organizationId: currentOrgId }) } });
 
-  const updateApp = useUpdateApplication();
   const createOpp = useCreateOpportunity();
   const updateOpp = useUpdateOpportunity();
   const { toast } = useToast();
@@ -128,16 +128,6 @@ export default function Panel() {
   };
 
   const currentLogo = orgForm.watch("logoUrl") || currentOrg?.logoUrl;
-
-  const handleUpdateStatus = (appId: number, newStatus: string) => {
-    updateApp.mutate({ id: appId, data: { status: newStatus } }, {
-      onSuccess: () => {
-        toast({ title: t("panel.toast.appStatusUpdated") });
-        queryClient.invalidateQueries({ queryKey: getListApplicationsQueryKey({ organizationId: currentOrgId }) });
-        queryClient.invalidateQueries({ queryKey: getGetOrganizationStatsQueryKey(currentOrgId) });
-      }
-    });
-  };
 
   const handleCloseOpp = (oppId: number) => {
     updateOpp.mutate({ id: oppId, data: { status: "cerrada" } }, {
@@ -268,34 +258,7 @@ export default function Panel() {
                   {applications?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">{t("panel.applications.empty")}</p>
                   ) : (
-                    <div className="space-y-4">
-                      {applications?.map(app => (
-                        <div key={app.id} className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-muted/10 transition-colors">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h4 className="font-bold">{app.professionalName}</h4>
-                              <Badge className={STATUS_COLORS[app.status]}>{applicationStatusLabel(app.status)}</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-1">{app.professionalHeadline}</p>
-                            <p className="text-sm"><strong>{t("panel.applications.appliesTo")}</strong> <Link href={`/oportunidades/${app.opportunityId}`} className="text-primary hover:underline">{app.opportunityTitle}</Link></p>
-                            {app.message && <div className="mt-3 text-sm bg-muted/30 p-3 rounded-md italic border-l-4 border-muted">"{app.message}"</div>}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Select value={app.status} onValueChange={(val) => handleUpdateStatus(app.id, val)}>
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="en_revision">{applicationStatusLabel("en_revision")}</SelectItem>
-                                <SelectItem value="preseleccionado">{applicationStatusLabel("preseleccionado")}</SelectItem>
-                                <SelectItem value="aceptado">{applicationStatusLabel("aceptado")}</SelectItem>
-                                <SelectItem value="rechazado">{applicationStatusLabel("rechazado")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <CandidatePipeline orgId={currentOrgId} applications={applications ?? []} />
                   )}
                 </CardContent>
               </Card>

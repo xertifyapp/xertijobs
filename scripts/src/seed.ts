@@ -1,4 +1,5 @@
 import { seedUsers } from "./seedUsers";
+import { seedExtra } from "./seedExtra";
 import {
   db,
   organizationsTable,
@@ -656,6 +657,7 @@ async function seed(): Promise<void> {
 
 seed()
   .then(() => seedUsers())
+  .then(() => seedExtra())
   .then(() => process.exit(0))
   .catch((err) => {
     process.stderr.write(`Seed failed: ${err}\n`);

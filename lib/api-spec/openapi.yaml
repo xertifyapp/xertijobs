@@ -618,6 +618,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+  /applications/{id}/events:
+    get:
+      operationId: listApplicationEvents
+      tags: [applications]
+      summary: List status-change history for an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Application events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApplicationEvent"
   /stats/global:
     get:
       operationId: getGlobalStats
@@ -1089,8 +1108,18 @@ components:
         professionalName: { type: ["string", "null"] }
         professionalEmail: { type: ["string", "null"] }
         professionalHeadline: { type: ["string", "null"] }
-        status: { type: string, description: "enviada | en_revision | preseleccionado | aceptado | rechazado" }
+        status: { type: string, description: "enviada | en_revision | preseleccionado | entrevista | aceptado | rechazado" }
         message: { type: ["string", "null"] }
+        score: { type: ["integer", "null"], description: "Candidate score 0-100 set by the recruiter" }
+        createdAt: { type: string }
+    ApplicationEvent:
+      type: object
+      required: [id, applicationId, status, createdAt]
+      properties:
+        id: { type: integer }
+        applicationId: { type: integer }
+        status: { type: string, description: "The status the application was moved to" }
+        note: { type: ["string", "null"], description: "Optional recruiter message attached to the change" }
         createdAt: { type: string }
     ApplicationInput:
       type: object
@@ -1103,6 +1132,8 @@ components:
       type: object
       properties:
         status: { type: string }
+        score: { type: ["integer", "null"], minimum: 0, maximum: 100 }
+        note: { type: string }
     GlobalStats:
       type: object
       required: [totalOrganizations, pendingOrganizations, totalOpportunities, activeOpportunities, totalApplications, totalProfessionals, totalCountries, opportunitiesByType, opportunitiesByCountry, applicationsByStatus]
