@@ -16,4 +16,7 @@ export interface OrganizationInput {
   logoUrl?: string;
   description?: string;
   contactEmail?: string;
+  contactPhone?: string;
+  verificationDocs?: string;
+  status?: string;
 }

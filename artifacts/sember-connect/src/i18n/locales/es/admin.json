@@ -24,6 +24,8 @@
       "verify": "Verificar",
       "suspend": "Suspender",
       "reject": "Rechazar",
+      "edit": "Editar",
+      "delete": "Eliminar",
       "verifiedOn": "Verificada el {{date}}"
     },
     "activity": {
@@ -34,7 +36,40 @@
       "verificada": "Organización verificada",
       "suspendida": "Organización suspendida",
       "rechazada": "Organización rechazada",
-      "pendiente": "Organización marcada como pendiente"
+      "pendiente": "Organización marcada como pendiente",
+      "created": "Organización creada",
+      "updated": "Organización actualizada",
+      "deleted": "Organización eliminada",
+      "error": "Ocurrió un error. Inténtalo de nuevo."
+    },
+    "manage": {
+      "newOrganization": "Nueva Organización",
+      "createTitle": "Crear organización",
+      "createSubtitle": "Registra una nueva institución en la plataforma.",
+      "editTitle": "Editar organización",
+      "editSubtitle": "Actualiza la información de la institución.",
+      "deleteTitle": "Eliminar organización",
+      "deleteConfirm": "¿Seguro que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer y borrará también sus oportunidades.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "create": "Crear",
+      "confirmDelete": "Sí, eliminar",
+      "fields": {
+        "name": "Nombre",
+        "type": "Tipo de organización",
+        "country": "País",
+        "city": "Ciudad",
+        "website": "Sitio web",
+        "contactEmail": "Correo de contacto",
+        "contactPhone": "Teléfono de contacto",
+        "verificationDocs": "Documentos de verificación (enlace)",
+        "status": "Estado",
+        "description": "Descripción"
+      },
+      "placeholders": {
+        "verificationDocs": "https://... enlace a documentos de respaldo"
+      }
     }
   }
 }

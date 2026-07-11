@@ -12,6 +12,8 @@ export const organizationsTable = pgTable("organizations", {
   logoUrl: text("logo_url"),
   description: text("description"),
   contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  verificationDocs: text("verification_docs"),
   status: text("status").notNull().default("pendiente"),
   verifiedBy: integer("verified_by"),
   verifiedAt: timestamp("verified_at", { withTimezone: true }),

@@ -1,14 +1,26 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useGetGlobalStats, useGetRecentActivity, useListOrganizations, useUpdateOrganization, getListOrganizationsQueryKey, getGetGlobalStatsQueryKey } from "@workspace/api-client-react";
+import { useGetGlobalStats, useGetRecentActivity, useListOrganizations, useUpdateOrganization, useCreateOrganization, useDeleteOrganization, getListOrganizationsQueryKey, getGetGlobalStatsQueryKey, getGetRecentActivityQueryKey, type Organization } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Briefcase, Users, Globe2, Activity, CheckCircle, XCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Building2, Briefcase, Users, Globe2, Activity, CheckCircle, XCircle, Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { OrganizationForm, type OrganizationFormValues } from "@/components/OrganizationForm";
 
 export default function Admin() {
   const { t, i18n } = useTranslation();
@@ -19,8 +31,22 @@ export default function Admin() {
   const { data: allOrgs } = useListOrganizations();
   
   const updateOrg = useUpdateOrganization();
+  const createOrg = useCreateOrganization();
+  const deleteOrg = useDeleteOrganization();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
+  const [deletingOrg, setDeletingOrg] = useState<Organization | null>(null);
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
+    queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetRecentActivityQueryKey() });
+  };
 
   const handleChangeStatus = (id: number, status: string) => {
     updateOrg.mutate({ id, data: { status } }, {
@@ -29,9 +55,7 @@ export default function Admin() {
           title: t(`admin.toast.${status}`),
           variant: status === "rechazada" || status === "suspendida" ? "destructive" : "default",
         });
-        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
-        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
+        invalidateAll();
       }
     });
   };
@@ -39,12 +63,78 @@ export default function Admin() {
   const handleApprove = (id: number) => handleChangeStatus(id, "verificada");
   const handleReject = (id: number) => handleChangeStatus(id, "rechazada");
 
+  const openCreate = () => {
+    setFormMode("create");
+    setEditingOrg(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (org: Organization) => {
+    setFormMode("edit");
+    setEditingOrg(org);
+    setFormOpen(true);
+  };
+
+  const handleFormSubmit = (values: OrganizationFormValues) => {
+    const payload = {
+      name: values.name.trim(),
+      type: values.type,
+      country: values.country.trim(),
+      city: values.city.trim(),
+      website: values.website.trim(),
+      contactEmail: values.contactEmail.trim(),
+      contactPhone: values.contactPhone.trim(),
+      verificationDocs: values.verificationDocs.trim(),
+      description: values.description.trim(),
+      status: values.status,
+    };
+    if (formMode === "create") {
+      createOrg.mutate({ data: payload }, {
+        onSuccess: () => {
+          toast({ title: t("admin.toast.created") });
+          setFormOpen(false);
+          invalidateAll();
+        },
+        onError: () => toast({ title: t("admin.toast.error"), variant: "destructive" }),
+      });
+    } else if (editingOrg) {
+      updateOrg.mutate({ id: editingOrg.id, data: payload }, {
+        onSuccess: () => {
+          toast({ title: t("admin.toast.updated") });
+          setFormOpen(false);
+          invalidateAll();
+        },
+        onError: () => toast({ title: t("admin.toast.error"), variant: "destructive" }),
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deletingOrg) return;
+    deleteOrg.mutate({ id: deletingOrg.id }, {
+      onSuccess: () => {
+        toast({ title: t("admin.toast.deleted"), variant: "destructive" });
+        setDeletingOrg(null);
+        invalidateAll();
+      },
+      onError: () => toast({ title: t("admin.toast.error"), variant: "destructive" }),
+    });
+  };
+
   return (
     <MainLayout>
       <div className="bg-primary text-primary-foreground border-b border-primary/20">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold">{t("admin.title")}</h1>
-          <p className="text-primary-foreground/80 mt-2">{t("admin.subtitle")}</p>
+        <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">{t("admin.title")}</h1>
+            <p className="text-primary-foreground/80 mt-2">{t("admin.subtitle")}</p>
+          </div>
+          <Button
+            onClick={openCreate}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" /> {t("admin.manage.newOrganization")}
+          </Button>
         </div>
       </div>
 
@@ -185,6 +275,12 @@ export default function Admin() {
                             {org.status !== 'rechazada' && (
                               <Button variant="outline" size="sm" className="text-red-700 border-red-300 hover:bg-red-50" onClick={() => handleChangeStatus(org.id, "rechazada")} disabled={updateOrg.isPending}>{t("admin.all.reject")}</Button>
                             )}
+                            <Button variant="outline" size="sm" onClick={() => openEdit(org)}>
+                              <Pencil className="w-3.5 h-3.5 mr-1" /> {t("admin.all.edit")}
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setDeletingOrg(org)}>
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("admin.all.delete")}
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -221,6 +317,39 @@ export default function Admin() {
           </div>
         </div>
       </div>
+
+      <OrganizationForm
+        mode={formMode}
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        organization={editingOrg}
+        onSubmit={handleFormSubmit}
+        isPending={createOrg.isPending || updateOrg.isPending}
+      />
+
+      <AlertDialog open={deletingOrg !== null} onOpenChange={(open) => !open && setDeletingOrg(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.manage.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.manage.deleteConfirm", { name: deletingOrg?.name ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteOrg.isPending}>{t("admin.manage.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleteOrg.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("admin.manage.confirmDelete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MainLayout>
   );
 }

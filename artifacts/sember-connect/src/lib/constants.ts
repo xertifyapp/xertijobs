@@ -17,9 +17,18 @@ export const ORGANIZATION_TYPE_VALUES = [
   "ong",
   "fundacion",
   "organismo_internacional",
+  "academia",
+  "bootcamp",
 ] as const;
 
 export const MODALITY_VALUES = ["presencial", "remoto", "hibrido"] as const;
+
+export const ORGANIZATION_STATUS_VALUES = [
+  "pendiente",
+  "verificada",
+  "suspendida",
+  "rechazada",
+] as const;
 
 export type DomainOption = { value: string; label: string };
 

@@ -24,6 +24,8 @@
       "verify": "Verify",
       "suspend": "Suspend",
       "reject": "Reject",
+      "edit": "Edit",
+      "delete": "Delete",
       "verifiedOn": "Verified on {{date}}"
     },
     "activity": {
@@ -34,7 +36,40 @@
       "verificada": "Organization verified",
       "suspendida": "Organization suspended",
       "rechazada": "Organization rejected",
-      "pendiente": "Organization set to pending"
+      "pendiente": "Organization set to pending",
+      "created": "Organization created",
+      "updated": "Organization updated",
+      "deleted": "Organization deleted",
+      "error": "Something went wrong. Please try again."
+    },
+    "manage": {
+      "newOrganization": "New Organization",
+      "createTitle": "Create organization",
+      "createSubtitle": "Register a new institution on the platform.",
+      "editTitle": "Edit organization",
+      "editSubtitle": "Update the institution's information.",
+      "deleteTitle": "Delete organization",
+      "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone and will also remove its opportunities.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "create": "Create",
+      "confirmDelete": "Yes, delete",
+      "fields": {
+        "name": "Name",
+        "type": "Organization type",
+        "country": "Country",
+        "city": "City",
+        "website": "Website",
+        "contactEmail": "Contact email",
+        "contactPhone": "Contact phone",
+        "verificationDocs": "Verification documents (link)",
+        "status": "Status",
+        "description": "Description"
+      },
+      "placeholders": {
+        "verificationDocs": "https://... link to supporting documents"
+      }
     }
   }
 }

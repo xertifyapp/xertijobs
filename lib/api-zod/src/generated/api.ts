@@ -66,7 +66,10 @@ export const RegisterBody = zod.object({
   "website": zod.string().optional(),
   "logoUrl": zod.string().optional(),
   "description": zod.string().optional(),
-  "contactEmail": zod.string().optional()
+  "contactEmail": zod.string().optional(),
+  "contactPhone": zod.string().optional(),
+  "verificationDocs": zod.string().optional(),
+  "status": zod.string().optional()
 }).optional()
 })
 
@@ -159,13 +162,15 @@ export const ListOrganizationsQueryParams = zod.object({
 export const ListOrganizationsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp'),
   "country": zod.string(),
   "city": zod.string().nullish(),
   "website": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "verificationDocs": zod.string().nullish(),
   "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
   "verifiedBy": zod.number().nullish(),
   "verifiedAt": zod.string().nullish(),
@@ -189,19 +194,24 @@ export const CreateOrganizationBody = zod.object({
   "website": zod.string().optional(),
   "logoUrl": zod.string().optional(),
   "description": zod.string().optional(),
-  "contactEmail": zod.string().optional()
+  "contactEmail": zod.string().optional(),
+  "contactPhone": zod.string().optional(),
+  "verificationDocs": zod.string().optional(),
+  "status": zod.string().optional()
 })
 
 export const CreateOrganizationResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp'),
   "country": zod.string(),
   "city": zod.string().nullish(),
   "website": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "verificationDocs": zod.string().nullish(),
   "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
   "verifiedBy": zod.number().nullish(),
   "verifiedAt": zod.string().nullish(),
@@ -220,13 +230,15 @@ export const GetOrganizationParams = zod.object({
 export const GetOrganizationResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp'),
   "country": zod.string(),
   "city": zod.string().nullish(),
   "website": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "verificationDocs": zod.string().nullish(),
   "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
   "verifiedBy": zod.number().nullish(),
   "verifiedAt": zod.string().nullish(),
@@ -254,19 +266,23 @@ export const UpdateOrganizationBody = zod.object({
   "logoUrl": zod.string().optional(),
   "description": zod.string().optional(),
   "contactEmail": zod.string().optional(),
+  "contactPhone": zod.string().optional(),
+  "verificationDocs": zod.string().optional(),
   "status": zod.string().optional()
 })
 
 export const UpdateOrganizationResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp'),
   "country": zod.string(),
   "city": zod.string().nullish(),
   "website": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "verificationDocs": zod.string().nullish(),
   "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
   "verifiedBy": zod.number().nullish(),
   "verifiedAt": zod.string().nullish(),
@@ -726,13 +742,15 @@ export const ListFollowedOrganizationsParams = zod.object({
 export const ListFollowedOrganizationsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp'),
   "country": zod.string(),
   "city": zod.string().nullish(),
   "website": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "verificationDocs": zod.string().nullish(),
   "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
   "verifiedBy": zod.number().nullish(),
   "verifiedAt": zod.string().nullish(),

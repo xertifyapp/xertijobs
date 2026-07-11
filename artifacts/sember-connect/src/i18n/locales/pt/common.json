@@ -76,7 +76,9 @@
       "gobierno": "Governo",
       "ong": "ONG",
       "fundacion": "Fundação",
-      "organismo_internacional": "Organismo Internacional"
+      "organismo_internacional": "Organismo Internacional",
+      "academia": "Academia",
+      "bootcamp": "Bootcamp"
     },
     "modality": {
       "presencial": "Presencial",

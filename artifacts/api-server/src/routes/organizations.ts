@@ -56,17 +56,25 @@ router.get("/organizations", async (req, res): Promise<void> => {
   res.json(ListOrganizationsResponse.parse(serializeDates(rows)));
 });
 
-router.post("/organizations", async (req, res): Promise<void> => {
+router.post("/organizations", requireRole("admin"), async (req, res): Promise<void> => {
   const parsed = CreateOrganizationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
-  const [org] = await db
-    .insert(organizationsTable)
-    .values({ ...parsed.data, status: "pendiente" })
-    .returning();
+  // Admin-only endpoint. Public empresa self-registration happens via
+  // /auth/register (always "pendiente"). Admins may create an organization
+  // directly with any status (and get it stamped as verified).
+  const sessionUser = req.session.user;
+  const status = parsed.data.status ?? "pendiente";
+  const values: typeof organizationsTable.$inferInsert = { ...parsed.data, status };
+  if (status !== "pendiente") {
+    values.verifiedBy = sessionUser?.id ?? null;
+    values.verifiedAt = new Date();
+  }
+
+  const [org] = await db.insert(organizationsTable).values(values).returning();
 
   res.status(201).json(CreateOrganizationResponse.parse(serializeDates(org)));
 });
@@ -89,6 +97,8 @@ router.get("/organizations/:id", async (req, res): Promise<void> => {
       logoUrl: organizationsTable.logoUrl,
       description: organizationsTable.description,
       contactEmail: organizationsTable.contactEmail,
+      contactPhone: organizationsTable.contactPhone,
+      verificationDocs: organizationsTable.verificationDocs,
       status: organizationsTable.status,
       verifiedBy: organizationsTable.verifiedBy,
       verifiedAt: organizationsTable.verifiedAt,

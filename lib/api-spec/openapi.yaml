@@ -835,13 +835,15 @@ components:
       properties:
         id: { type: integer }
         name: { type: string }
-        type: { type: string, description: "universidad | empresa | gobierno | ong | fundacion | organismo_internacional" }
+        type: { type: string, description: "universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp" }
         country: { type: string }
         city: { type: ["string", "null"] }
         website: { type: ["string", "null"] }
         logoUrl: { type: ["string", "null"] }
         description: { type: ["string", "null"] }
         contactEmail: { type: ["string", "null"] }
+        contactPhone: { type: ["string", "null"] }
+        verificationDocs: { type: ["string", "null"] }
         status: { type: string, description: "pendiente | verificada | suspendida | rechazada" }
         verifiedBy: { type: ["integer", "null"] }
         verifiedAt: { type: ["string", "null"] }
@@ -859,6 +861,9 @@ components:
         logoUrl: { type: string }
         description: { type: string }
         contactEmail: { type: string }
+        contactPhone: { type: string }
+        verificationDocs: { type: string }
+        status: { type: string }
     OrganizationUpdate:
       type: object
       properties:
@@ -870,6 +875,8 @@ components:
         logoUrl: { type: string }
         description: { type: string }
         contactEmail: { type: string }
+        contactPhone: { type: string }
+        verificationDocs: { type: string }
         status: { type: string }
     Opportunity:
       type: object

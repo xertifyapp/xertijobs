@@ -9,7 +9,7 @@
 export interface Organization {
   id: number;
   name: string;
-  /** universidad | empresa | gobierno | ong | fundacion | organismo_internacional */
+  /** universidad | empresa | gobierno | ong | fundacion | organismo_internacional | academia | bootcamp */
   type: string;
   country: string;
   /** @nullable */
@@ -22,6 +22,10 @@ export interface Organization {
   description?: string | null;
   /** @nullable */
   contactEmail?: string | null;
+  /** @nullable */
+  contactPhone?: string | null;
+  /** @nullable */
+  verificationDocs?: string | null;
   /** pendiente | verificada | suspendida | rechazada */
   status: string;
   /** @nullable */

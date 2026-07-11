@@ -16,5 +16,7 @@ export interface OrganizationUpdate {
   logoUrl?: string;
   description?: string;
   contactEmail?: string;
+  contactPhone?: string;
+  verificationDocs?: string;
   status?: string;
 }
