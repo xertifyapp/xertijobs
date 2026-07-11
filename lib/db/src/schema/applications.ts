@@ -36,6 +36,7 @@ export const applicationEventsTable = pgTable("application_events", {
     .references(() => applicationsTable.id, { onDelete: "cascade" }),
   status: text("status").notNull(),
   note: text("note"),
+  authorRole: text("author_role"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

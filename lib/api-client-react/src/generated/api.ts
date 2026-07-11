@@ -24,6 +24,7 @@ import type {
   Application,
   ApplicationEvent,
   ApplicationInput,
+  ApplicationMessageInput,
   ApplicationUpdate,
   AuthUser,
   ErrorEnvelope,
@@ -2391,6 +2392,77 @@ export const useUpdateApplication = <TError = ErrorType<unknown>,
       return useMutation(getUpdateApplicationMutationOptions(options));
     }
 
+export const getWithdrawApplicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}`
+}
+
+/**
+ * @summary Withdraw (delete) an application. Postulante can withdraw their own; admin any.
+ */
+export const withdrawApplication = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getWithdrawApplicationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getWithdrawApplicationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['withdrawApplication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof withdrawApplication>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  withdrawApplication(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WithdrawApplicationMutationResult = NonNullable<Awaited<ReturnType<typeof withdrawApplication>>>
+
+    export type WithdrawApplicationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Withdraw (delete) an application. Postulante can withdraw their own; admin any.
+ */
+export const useWithdrawApplication = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof withdrawApplication>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getWithdrawApplicationMutationOptions(options));
+    }
+
 export const getListApplicationEventsUrl = (id: number,) => {
 
 
@@ -2467,6 +2539,78 @@ export function useListApplicationEvents<TData = Awaited<ReturnType<typeof listA
 
 
 
+
+export const getRespondApplicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}/events`
+}
+
+/**
+ * @summary Add a message to an application timeline (postulante, empresa or admin)
+ */
+export const respondApplication = async (id: number,
+    applicationMessageInput: ApplicationMessageInput, options?: RequestInit): Promise<ApplicationEvent> => {
+
+  return customFetch<ApplicationEvent>(getRespondApplicationUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(applicationMessageInput)
+  }
+);}
+
+
+
+
+
+export const getRespondApplicationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondApplication>>, TError,{id: number;data: BodyType<ApplicationMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondApplication>>, TError,{id: number;data: BodyType<ApplicationMessageInput>}, TContext> => {
+
+const mutationKey = ['respondApplication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondApplication>>, {id: number;data: BodyType<ApplicationMessageInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondApplication(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondApplicationMutationResult = NonNullable<Awaited<ReturnType<typeof respondApplication>>>
+    export type RespondApplicationMutationBody = BodyType<ApplicationMessageInput>
+    export type RespondApplicationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a message to an application timeline (postulante, empresa or admin)
+ */
+export const useRespondApplication = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondApplication>>, TError,{id: number;data: BodyType<ApplicationMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondApplication>>,
+        TError,
+        {id: number;data: BodyType<ApplicationMessageInput>},
+        TContext
+      > => {
+      return useMutation(getRespondApplicationMutationOptions(options));
+    }
 
 export const getGetGlobalStatsUrl = () => {
 

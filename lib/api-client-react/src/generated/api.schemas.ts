@@ -388,7 +388,20 @@ export interface ApplicationEvent {
      * @nullable
      */
   note?: string | null;
+  /**
+     * Who created the event: empresa | admin | postulante | sistema
+     * @nullable
+     */
+  authorRole?: string | null;
   createdAt: string;
+}
+
+export interface ApplicationMessageInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  note: string;
 }
 
 export interface ApplicationInput {

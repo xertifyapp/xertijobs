@@ -196,7 +196,10 @@ const EVENT_NOTES: Record<string, string> = {
   rechazado: "Agradecemos tu interés; en esta ocasión avanzamos con otros perfiles.",
 };
 
-function buildTimeline(finalStatus: string, baseDaysAgo: number): { status: string; note: string; createdAt: Date }[] {
+function buildTimeline(
+  finalStatus: string,
+  baseDaysAgo: number,
+): { status: string; note: string; authorRole: string; createdAt: Date }[] {
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
   const chain: string[] = [];
@@ -212,6 +215,8 @@ function buildTimeline(finalStatus: string, baseDaysAgo: number): { status: stri
   return chain.map((status, i) => ({
     status,
     note: EVENT_NOTES[status] ?? "",
+    // The first event is the candidate's own submission; the rest are recruiter actions.
+    authorRole: status === "enviada" ? "postulante" : "empresa",
     createdAt: new Date(now - (baseDaysAgo - step * i) * dayMs),
   }));
 }
@@ -298,6 +303,47 @@ const PLANNED: PlannedApplication[] = [
     message: "Me encantaría iniciar mi carrera en Globant como pasante y aprender de equipos internacionales.",
     daysAgo: 2,
   },
+  // Test applications for Valentina Ríos (postulante@sember.com / professionalId 1)
+  {
+    opportunityTitle: "QA Automation Engineer",
+    professionalEmail: "valentina.rios@example.com",
+    finalStatus: "en_revision",
+    score: null,
+    message: "Tengo experiencia con JavaScript y testing. Me interesa mucho crecer en automatización de pruebas.",
+    daysAgo: 5,
+  },
+  {
+    opportunityTitle: "Frontend Developer React Ssr",
+    professionalEmail: "valentina.rios@example.com",
+    finalStatus: "entrevista",
+    score: 4,
+    message: "React y TypeScript son mi especialidad. Adjunto mi portafolio con proyectos recientes.",
+    daysAgo: 15,
+  },
+  {
+    opportunityTitle: "Ingeniero de Datos Ssr",
+    professionalEmail: "valentina.rios@example.com",
+    finalStatus: "preseleccionado",
+    score: 4,
+    message: "Manejo Python y SQL, y quiero especializarme en ingeniería de datos con impacto regional.",
+    daysAgo: 11,
+  },
+  {
+    opportunityTitle: "Desarrollador Full Stack Semi Senior",
+    professionalEmail: "valentina.rios@example.com",
+    finalStatus: "aceptado",
+    score: 5,
+    message: "Experiencia full stack con React y Node.js. Con muchas ganas de sumarme al equipo.",
+    daysAgo: 22,
+  },
+  {
+    opportunityTitle: "Scrum Master Ágil",
+    professionalEmail: "valentina.rios@example.com",
+    finalStatus: "rechazado",
+    score: 2,
+    message: "Aunque mi perfil es técnico, me interesa la facilitación ágil y quiero explorar este rol.",
+    daysAgo: 9,
+  },
 ];
 
 async function seedExtra(): Promise<void> {
@@ -382,6 +428,7 @@ async function seedExtra(): Promise<void> {
         applicationId: inserted.id,
         status: ev.status,
         note: ev.note,
+        authorRole: ev.authorRole,
         createdAt: ev.createdAt,
       })),
     );

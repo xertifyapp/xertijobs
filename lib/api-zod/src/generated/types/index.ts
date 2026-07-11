@@ -10,6 +10,7 @@ export * from './activityItem';
 export * from './application';
 export * from './applicationEvent';
 export * from './applicationInput';
+export * from './applicationMessageInput';
 export * from './applicationUpdate';
 export * from './authUser';
 export * from './authUserPreferredLanguage';

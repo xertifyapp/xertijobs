@@ -16,5 +16,10 @@ export interface ApplicationEvent {
      * @nullable
      */
   note?: string | null;
+  /**
+     * Who created the event: empresa | admin | postulante | sistema
+     * @nullable
+     */
+  authorRole?: string | null;
   createdAt: string;
 }

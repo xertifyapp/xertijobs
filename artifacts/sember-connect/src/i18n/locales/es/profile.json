@@ -30,7 +30,36 @@
       "history": "Historial del proceso",
       "historyEmpty": "Aún no hay actualizaciones.",
       "noNote": "Sin mensaje",
-      "score": "Puntuación"
+      "score": "Puntuación",
+      "viewDetail": "Ver detalle",
+      "withdraw": "Retirar",
+      "author": {
+        "you": "Tú",
+        "institution": "Institución",
+        "sember": "SEMBER",
+        "system": "Sistema"
+      },
+      "detail": {
+        "status": "Estado",
+        "date": "Fecha de postulación",
+        "documents": "Documentos requeridos",
+        "noDocuments": "Esta oportunidad no requiere documentos.",
+        "messages": "Mensajes",
+        "replyPlaceholder": "Escribe un mensaje a la institución...",
+        "send": "Enviar"
+      },
+      "withdrawConfirm": {
+        "title": "¿Retirar postulación?",
+        "description": "Se eliminará tu postulación a \"{{title}}\" y su historial. Esta acción no se puede deshacer, pero podrás volver a postular más adelante.",
+        "cancel": "Cancelar",
+        "confirm": "Retirar postulación"
+      },
+      "toast": {
+        "messageSent": "Mensaje enviado",
+        "messageError": "Error al enviar el mensaje",
+        "withdrawn": "Postulación retirada",
+        "withdrawError": "Error al retirar la postulación"
+      }
     },
     "saved": {
       "loading": "Cargando guardados...",

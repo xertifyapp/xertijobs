@@ -30,7 +30,36 @@
       "history": "Histórico do processo",
       "historyEmpty": "Ainda não há atualizações.",
       "noNote": "Sem mensagem",
-      "score": "Pontuação"
+      "score": "Pontuação",
+      "viewDetail": "Ver detalhe",
+      "withdraw": "Retirar",
+      "author": {
+        "you": "Você",
+        "institution": "Instituição",
+        "sember": "SEMBER",
+        "system": "Sistema"
+      },
+      "detail": {
+        "status": "Estado",
+        "date": "Data da candidatura",
+        "documents": "Documentos obrigatórios",
+        "noDocuments": "Esta oportunidade não requer documentos.",
+        "messages": "Mensagens",
+        "replyPlaceholder": "Escreva uma mensagem para a instituição...",
+        "send": "Enviar"
+      },
+      "withdrawConfirm": {
+        "title": "Retirar candidatura?",
+        "description": "Sua candidatura a \"{{title}}\" e seu histórico serão excluídos. Esta ação não pode ser desfeita, mas você poderá se candidatar novamente mais tarde.",
+        "cancel": "Cancelar",
+        "confirm": "Retirar candidatura"
+      },
+      "toast": {
+        "messageSent": "Mensagem enviada",
+        "messageError": "Erro ao enviar a mensagem",
+        "withdrawn": "Candidatura retirada",
+        "withdrawError": "Erro ao retirar a candidatura"
+      }
     },
     "saved": {
       "loading": "Carregando salvos...",

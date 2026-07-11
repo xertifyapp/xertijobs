@@ -3,29 +3,128 @@ import type { Application } from "@workspace/api-client-react";
 import {
   useListApplicationEvents,
   getListApplicationEventsQueryKey,
+  useGetOpportunity,
+  getGetOpportunityQueryKey,
+  useRespondApplication,
+  useWithdrawApplication,
+  getListApplicationsQueryKey,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { STATUS_COLORS, APPLICATION_STATUS_VALUES, useDomainLabels } from "@/lib/constants";
+import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Link } from "wouter";
-import { ExternalLink, Star, ChevronDown, ChevronUp, Check, Loader2 } from "lucide-react";
+import {
+  ExternalLink,
+  Star,
+  Check,
+  Loader2,
+  FileText,
+  MessageSquare,
+  Send,
+  Trash2,
+  Eye,
+} from "lucide-react";
 
 const STEPS = ["enviada", "en_revision", "preseleccionado", "entrevista", "aceptado"] as const;
 
 export function ApplicationPipelineCard({ app }: { app: Application }) {
   const { t, i18n } = useTranslation();
   const { applicationStatusLabel } = useDomainLabels();
-  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: events, isLoading } = useListApplicationEvents(app.id, {
-    query: { enabled: open, queryKey: getListApplicationEventsQueryKey(app.id) },
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [reply, setReply] = useState("");
+
+  const eventsQueryKey = getListApplicationEventsQueryKey(app.id);
+  const { data: events, isLoading: eventsLoading } = useListApplicationEvents(app.id, {
+    query: { enabled: detailOpen, queryKey: eventsQueryKey },
   });
+
+  const { data: opportunity, isLoading: oppLoading } = useGetOpportunity(app.opportunityId, {
+    query: { enabled: detailOpen, queryKey: getGetOpportunityQueryKey(app.opportunityId) },
+  });
+
+  const respond = useRespondApplication();
+  const withdraw = useWithdrawApplication();
 
   const isRejected = app.status === "rechazado";
   const currentIndex = STEPS.indexOf(app.status as (typeof STEPS)[number]);
   const dateFmt = (d: string) => new Date(d).toLocaleDateString(i18n.language);
+  const dateTimeFmt = (d: string) =>
+    new Date(d).toLocaleString(i18n.language, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+  const authorLabel = (role?: string | null) => {
+    if (role === "postulante") return t("profile.applications.author.you");
+    if (role === "empresa") return t("profile.applications.author.institution");
+    if (role === "admin") return t("profile.applications.author.sember");
+    return t("profile.applications.author.system");
+  };
+
+  const documents = opportunity?.requiredDocuments ?? [];
+
+  const handleReply = () => {
+    const note = reply.trim();
+    if (!note) return;
+    respond.mutate(
+      { id: app.id, data: { note } },
+      {
+        onSuccess: () => {
+          setReply("");
+          queryClient.invalidateQueries({ queryKey: eventsQueryKey });
+          toast({ title: t("profile.applications.toast.messageSent") });
+        },
+        onError: () =>
+          toast({ title: t("profile.applications.toast.messageError"), variant: "destructive" }),
+      },
+    );
+  };
+
+  const handleWithdraw = () => {
+    withdraw.mutate(
+      { id: app.id },
+      {
+        onSuccess: () => {
+          setWithdrawOpen(false);
+          setDetailOpen(false);
+          queryClient.invalidateQueries({ queryKey: getListApplicationsQueryKey() });
+          queryClient.invalidateQueries({
+            queryKey: getListApplicationsQueryKey({ professionalId: app.professionalId }),
+          });
+          toast({ title: t("profile.applications.toast.withdrawn") });
+        },
+        onError: () =>
+          toast({ title: t("profile.applications.toast.withdrawError"), variant: "destructive" }),
+      },
+    );
+  };
 
   return (
     <Card>
@@ -93,46 +192,165 @@ export function ApplicationPipelineCard({ app }: { app: Application }) {
           </div>
         )}
 
-        <div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setDetailOpen(true)}>
+            <Eye className="w-4 h-4 mr-1" /> {t("profile.applications.viewDetail")}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="px-0 text-primary"
-            onClick={() => setOpen((o) => !o)}
+            className="text-destructive hover:text-destructive"
+            onClick={() => setWithdrawOpen(true)}
           >
-            {open ? t("profile.applications.hideProcess") : t("profile.applications.viewProcess")}
-            {open ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+            <Trash2 className="w-4 h-4 mr-1" /> {t("profile.applications.withdraw")}
           </Button>
+        </div>
+      </CardContent>
 
-          {open && (
-            <div className="mt-3">
-              <p className="font-semibold text-sm mb-2">{t("profile.applications.history")}</p>
-              {isLoading ? (
+      {/* Detail dialog */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{app.opportunityTitle}</DialogTitle>
+            <DialogDescription>{app.organizationName}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Summary */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground text-xs">{t("profile.applications.detail.status")}</p>
+                <Badge className={`mt-1 ${STATUS_COLORS[app.status]}`}>
+                  {applicationStatusLabel(app.status)}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">{t("profile.applications.detail.date")}</p>
+                <p className="font-medium mt-1">{dateFmt(app.createdAt)}</p>
+              </div>
+              {app.score != null && (
+                <div>
+                  <p className="text-muted-foreground text-xs">{t("profile.applications.score")}</p>
+                  <p className="font-medium mt-1 inline-flex items-center gap-1">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> {app.score}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Documents */}
+            <div>
+              <p className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <FileText className="w-4 h-4" /> {t("profile.applications.detail.documents")}
+              </p>
+              {oppLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              ) : documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("profile.applications.detail.noDocuments")}
+                </p>
+              ) : (
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  {documents.map((doc, idx) => (
+                    <li key={idx}>{doc}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Messages timeline */}
+            <div>
+              <p className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" /> {t("profile.applications.detail.messages")}
+              </p>
+              {eventsLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin text-primary" />
               ) : !events || events.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("profile.applications.historyEmpty")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("profile.applications.historyEmpty")}
+                </p>
               ) : (
                 <ol className="relative border-l pl-4 space-y-4">
                   {events.map((ev) => (
                     <li key={ev.id} className="relative">
                       <span className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-primary" />
-                      <div className="flex items-center gap-2">
-                        <Badge className={STATUS_COLORS[ev.status]}>{applicationStatusLabel(ev.status)}</Badge>
-                        <span className="text-xs text-muted-foreground">{dateFmt(ev.createdAt)}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold">{authorLabel(ev.authorRole)}</span>
+                        <Badge className={STATUS_COLORS[ev.status]}>
+                          {applicationStatusLabel(ev.status)}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{dateTimeFmt(ev.createdAt)}</span>
                       </div>
                       {ev.note ? (
-                        <p className="text-sm mt-1 italic">"{ev.note}"</p>
+                        <p className="text-sm mt-1">{ev.note}</p>
                       ) : (
-                        <p className="text-xs text-muted-foreground mt-1">{t("profile.applications.noNote")}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("profile.applications.noNote")}
+                        </p>
                       )}
                     </li>
                   ))}
                 </ol>
               )}
+
+              {/* Reply box */}
+              <div className="mt-4 space-y-2">
+                <Textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  placeholder={t("profile.applications.detail.replyPlaceholder")}
+                  rows={3}
+                />
+                <div className="flex justify-end">
+                  <Button size="sm" onClick={handleReply} disabled={respond.isPending || !reply.trim()}>
+                    {respond.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4 mr-1" />
+                    )}
+                    {t("profile.applications.detail.send")}
+                  </Button>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </CardContent>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Withdraw confirm */}
+      <AlertDialog open={withdrawOpen} onOpenChange={setWithdrawOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("profile.applications.withdrawConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("profile.applications.withdrawConfirm.description", {
+                title: app.opportunityTitle,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("profile.applications.withdrawConfirm.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleWithdraw();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {withdraw.isPending ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-1" />
+              )}
+              {t("profile.applications.withdrawConfirm.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -618,6 +618,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+    delete:
+      operationId: withdrawApplication
+      tags: [applications]
+      summary: Withdraw (delete) an application. Postulante can withdraw their own; admin any.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Withdrawn
   /applications/{id}/events:
     get:
       operationId: listApplicationEvents
@@ -637,6 +649,28 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ApplicationEvent"
+    post:
+      operationId: respondApplication
+      tags: [applications]
+      summary: Add a message to an application timeline (postulante, empresa or admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationMessageInput"
+      responses:
+        "201":
+          description: Message added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationEvent"
   /stats/global:
     get:
       operationId: getGlobalStats
@@ -1120,7 +1154,13 @@ components:
         applicationId: { type: integer }
         status: { type: string, description: "The status the application was moved to" }
         note: { type: ["string", "null"], description: "Optional recruiter message attached to the change" }
+        authorRole: { type: ["string", "null"], description: "Who created the event: empresa | admin | postulante | sistema" }
         createdAt: { type: string }
+    ApplicationMessageInput:
+      type: object
+      required: [note]
+      properties:
+        note: { type: string, minLength: 1, maxLength: 2000 }
     ApplicationInput:
       type: object
       required: [opportunityId, professionalId]

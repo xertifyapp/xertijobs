@@ -883,6 +883,16 @@ export const UpdateApplicationResponse = zod.object({
 
 
 /**
+ * @summary Withdraw (delete) an application. Postulante can withdraw their own; admin any.
+ */
+export const WithdrawApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const WithdrawApplicationResponse = zod.void()
+
+
+/**
  * @summary List status-change history for an application
  */
 export const ListApplicationEventsParams = zod.object({
@@ -894,9 +904,35 @@ export const ListApplicationEventsResponseItem = zod.object({
   "applicationId": zod.number(),
   "status": zod.string().describe('The status the application was moved to'),
   "note": zod.string().nullish().describe('Optional recruiter message attached to the change'),
+  "authorRole": zod.string().nullish().describe('Who created the event: empresa | admin | postulante | sistema'),
   "createdAt": zod.string()
 })
 export const ListApplicationEventsResponse = zod.array(ListApplicationEventsResponseItem)
+
+
+/**
+ * @summary Add a message to an application timeline (postulante, empresa or admin)
+ */
+export const RespondApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const respondApplicationBodyNoteMax = 2000;
+
+
+
+export const RespondApplicationBody = zod.object({
+  "note": zod.string().min(1).max(respondApplicationBodyNoteMax)
+})
+
+export const RespondApplicationResponse = zod.object({
+  "id": zod.number(),
+  "applicationId": zod.number(),
+  "status": zod.string().describe('The status the application was moved to'),
+  "note": zod.string().nullish().describe('Optional recruiter message attached to the change'),
+  "authorRole": zod.string().nullish().describe('Who created the event: empresa | admin | postulante | sistema'),
+  "createdAt": zod.string()
+})
 
 
 /**

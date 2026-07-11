@@ -30,7 +30,36 @@
       "history": "Process history",
       "historyEmpty": "No updates yet.",
       "noNote": "No message",
-      "score": "Score"
+      "score": "Score",
+      "viewDetail": "View detail",
+      "withdraw": "Withdraw",
+      "author": {
+        "you": "You",
+        "institution": "Institution",
+        "sember": "SEMBER",
+        "system": "System"
+      },
+      "detail": {
+        "status": "Status",
+        "date": "Application date",
+        "documents": "Required documents",
+        "noDocuments": "This opportunity does not require documents.",
+        "messages": "Messages",
+        "replyPlaceholder": "Write a message to the institution...",
+        "send": "Send"
+      },
+      "withdrawConfirm": {
+        "title": "Withdraw application?",
+        "description": "Your application to \"{{title}}\" and its history will be deleted. This action cannot be undone, but you can apply again later.",
+        "cancel": "Cancel",
+        "confirm": "Withdraw application"
+      },
+      "toast": {
+        "messageSent": "Message sent",
+        "messageError": "Failed to send message",
+        "withdrawn": "Application withdrawn",
+        "withdrawError": "Failed to withdraw application"
+      }
     },
     "saved": {
       "loading": "Loading saved...",

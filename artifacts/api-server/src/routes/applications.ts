@@ -19,6 +19,10 @@ import {
   UpdateApplicationResponse,
   ListApplicationEventsParams,
   ListApplicationEventsResponse,
+  RespondApplicationParams,
+  RespondApplicationBody,
+  RespondApplicationResponse,
+  WithdrawApplicationParams,
 } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth";
 import { t } from "../lib/i18n";
@@ -191,6 +195,7 @@ router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, r
       applicationId: params.data.id,
       status: updateData.status as string,
       note: note ?? null,
+      authorRole: sessionUser?.role ?? null,
     });
   }
 
@@ -259,6 +264,7 @@ router.get("/applications/:id/events", requireAuth, async (req, res): Promise<vo
       applicationId: applicationEventsTable.applicationId,
       status: applicationEventsTable.status,
       note: applicationEventsTable.note,
+      authorRole: applicationEventsTable.authorRole,
       createdAt: applicationEventsTable.createdAt,
     })
     .from(applicationEventsTable)
@@ -267,5 +273,92 @@ router.get("/applications/:id/events", requireAuth, async (req, res): Promise<vo
 
   res.json(ListApplicationEventsResponse.parse(serializeDates(rows)));
 });
+
+router.post("/applications/:id/events", requireAuth, async (req, res): Promise<void> => {
+  const params = RespondApplicationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+    return;
+  }
+
+  const parsed = RespondApplicationBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
+    return;
+  }
+
+  const [existing] = await db
+    .select({
+      organizationId: opportunitiesTable.organizationId,
+      professionalId: applicationsTable.professionalId,
+      status: applicationsTable.status,
+    })
+    .from(applicationsTable)
+    .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
+    .where(eq(applicationsTable.id, params.data.id));
+
+  if (!existing) {
+    res.status(404).json({ error: t(req.locale, "applications.notFound") });
+    return;
+  }
+
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "empresa" && existing.organizationId !== sessionUser.organizationId) {
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnOrgApplications") });
+    return;
+  }
+  if (sessionUser?.role === "postulante" && existing.professionalId !== sessionUser.professionalId) {
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnProfile") });
+    return;
+  }
+
+  const [event] = await db
+    .insert(applicationEventsTable)
+    .values({
+      applicationId: params.data.id,
+      status: existing.status,
+      note: parsed.data.note,
+      authorRole: sessionUser?.role ?? null,
+    })
+    .returning();
+
+  res.status(201).json(RespondApplicationResponse.parse(serializeDates(event)));
+});
+
+router.delete(
+  "/applications/:id",
+  requireRole("postulante", "admin"),
+  async (req, res): Promise<void> => {
+    const params = WithdrawApplicationParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+      return;
+    }
+
+    const [existing] = await db
+      .select({ professionalId: applicationsTable.professionalId })
+      .from(applicationsTable)
+      .where(eq(applicationsTable.id, params.data.id));
+
+    if (!existing) {
+      res.status(404).json({ error: t(req.locale, "applications.notFound") });
+      return;
+    }
+
+    const sessionUser = req.session.user;
+    if (
+      sessionUser?.role === "postulante" &&
+      existing.professionalId !== sessionUser.professionalId
+    ) {
+      res.status(403).json({ error: t(req.locale, "applications.onlyOwnProfile") });
+      return;
+    }
+
+    // Hard delete; application_events cascade. Lets the professional re-apply later.
+    await db.delete(applicationsTable).where(eq(applicationsTable.id, params.data.id));
+
+    res.status(204).end();
+  },
+);
 
 export default router;
