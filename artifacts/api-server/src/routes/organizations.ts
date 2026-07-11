@@ -1,7 +1,7 @@
 import { serializeDates } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ilike, or, type SQL } from "drizzle-orm";
-import { db, organizationsTable } from "@workspace/db";
+import { and, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
+import { db, organizationsTable, organizationFollowsTable } from "@workspace/db";
 import {
   ListOrganizationsQueryParams,
   ListOrganizationsResponse,
@@ -71,7 +71,20 @@ router.get("/organizations/:id", async (req, res): Promise<void> => {
   }
 
   const [org] = await db
-    .select()
+    .select({
+      id: organizationsTable.id,
+      name: organizationsTable.name,
+      type: organizationsTable.type,
+      country: organizationsTable.country,
+      city: organizationsTable.city,
+      website: organizationsTable.website,
+      logoUrl: organizationsTable.logoUrl,
+      description: organizationsTable.description,
+      contactEmail: organizationsTable.contactEmail,
+      status: organizationsTable.status,
+      createdAt: organizationsTable.createdAt,
+      followersCount: sql<number>`(select count(*)::int from ${organizationFollowsTable} where ${organizationFollowsTable.organizationId} = ${organizationsTable.id})`,
+    })
     .from(organizationsTable)
     .where(eq(organizationsTable.id, params.data.id));
 

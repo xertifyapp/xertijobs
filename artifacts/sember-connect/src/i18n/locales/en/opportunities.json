@@ -53,6 +53,37 @@
       },
       "publishedOn": "Published on {{date}}",
       "views": "{{count}} views",
+      "share": {
+        "button": "Share",
+        "native": "Share...",
+        "whatsapp": "WhatsApp",
+        "linkedin": "LinkedIn",
+        "x": "X (Twitter)",
+        "facebook": "Facebook",
+        "telegram": "Telegram",
+        "copy": "Copy link",
+        "copied": "Link copied to clipboard",
+        "copyError": "Could not copy the link"
+      },
+      "institution": {
+        "title": "Institution",
+        "viewProfile": "View all organizations",
+        "website": "Website"
+      },
+      "contact": {
+        "title": "Contact",
+        "description": "Have questions about this opportunity? Reach out to the institution."
+      },
+      "follow": {
+        "follow": "Follow institution",
+        "following": "Following",
+        "followersCount_one": "{{count}} follower",
+        "followersCount_other": "{{count}} followers",
+        "toast": {
+          "followed": "You are now following this institution",
+          "unfollowed": "You unfollowed this institution"
+        }
+      },
       "toast": {
         "removed": "Opportunity removed from saved",
         "saved": "Opportunity saved successfully",

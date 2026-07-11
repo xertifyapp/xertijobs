@@ -24,5 +24,7 @@ export interface Organization {
   contactEmail?: string | null;
   /** pendiente | aprobada | rechazada */
   status: string;
+  /** @nullable */
+  followersCount?: number | null;
   createdAt: string;
 }

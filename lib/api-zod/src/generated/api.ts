@@ -167,6 +167,7 @@ export const ListOrganizationsResponseItem = zod.object({
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
 export const ListOrganizationsResponse = zod.array(ListOrganizationsResponseItem)
@@ -200,6 +201,7 @@ export const CreateOrganizationResponse = zod.object({
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -222,6 +224,7 @@ export const GetOrganizationResponse = zod.object({
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -259,6 +262,7 @@ export const UpdateOrganizationResponse = zod.object({
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -701,6 +705,59 @@ export const UnsaveOpportunityParams = zod.object({
 })
 
 export const UnsaveOpportunityResponse = zod.void()
+
+
+/**
+ * @summary List organizations followed by a professional
+ */
+export const ListFollowedOrganizationsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListFollowedOrganizationsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.string().describe('universidad | empresa | gobierno | ong | fundacion | organismo_internacional'),
+  "country": zod.string(),
+  "city": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "followersCount": zod.number().nullish(),
+  "createdAt": zod.string()
+})
+export const ListFollowedOrganizationsResponse = zod.array(ListFollowedOrganizationsResponseItem)
+
+
+/**
+ * @summary Follow an organization
+ */
+export const FollowOrganizationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const FollowOrganizationBody = zod.object({
+  "organizationId": zod.number()
+})
+
+export const FollowOrganizationResponse = zod.object({
+  "id": zod.number(),
+  "professionalId": zod.number(),
+  "organizationId": zod.number()
+})
+
+
+/**
+ * @summary Unfollow an organization
+ */
+export const UnfollowOrganizationParams = zod.object({
+  "id": zod.coerce.number(),
+  "organizationId": zod.coerce.number()
+})
+
+export const UnfollowOrganizationResponse = zod.void()
 
 
 /**

@@ -26,6 +26,8 @@ import type {
   ApplicationUpdate,
   AuthUser,
   ErrorEnvelope,
+  FollowOrganization,
+  FollowOrganizationInput,
   GlobalStats,
   HealthStatus,
   ListApplicationsParams,
@@ -1937,6 +1939,228 @@ export const useUnsaveOpportunity = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUnsaveOpportunityMutationOptions(options));
+    }
+
+export const getListFollowedOrganizationsUrl = (id: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/following`
+}
+
+/**
+ * @summary List organizations followed by a professional
+ */
+export const listFollowedOrganizations = async (id: number, options?: RequestInit): Promise<Organization[]> => {
+
+  return customFetch<Organization[]>(getListFollowedOrganizationsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFollowedOrganizationsQueryKey = (id: number,) => {
+    return [
+    `/api/professionals/${id}/following`
+    ] as const;
+    }
+
+
+export const getListFollowedOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof listFollowedOrganizations>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFollowedOrganizations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFollowedOrganizationsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFollowedOrganizations>>> = ({ signal }) => listFollowedOrganizations(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFollowedOrganizations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFollowedOrganizationsQueryResult = NonNullable<Awaited<ReturnType<typeof listFollowedOrganizations>>>
+export type ListFollowedOrganizationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List organizations followed by a professional
+ */
+
+export function useListFollowedOrganizations<TData = Awaited<ReturnType<typeof listFollowedOrganizations>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFollowedOrganizations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFollowedOrganizationsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getFollowOrganizationUrl = (id: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/following`
+}
+
+/**
+ * @summary Follow an organization
+ */
+export const followOrganization = async (id: number,
+    followOrganizationInput: FollowOrganizationInput, options?: RequestInit): Promise<FollowOrganization> => {
+
+  return customFetch<FollowOrganization>(getFollowOrganizationUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(followOrganizationInput)
+  }
+);}
+
+
+
+
+
+export const getFollowOrganizationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followOrganization>>, TError,{id: number;data: BodyType<FollowOrganizationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof followOrganization>>, TError,{id: number;data: BodyType<FollowOrganizationInput>}, TContext> => {
+
+const mutationKey = ['followOrganization'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof followOrganization>>, {id: number;data: BodyType<FollowOrganizationInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  followOrganization(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FollowOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof followOrganization>>>
+    export type FollowOrganizationMutationBody = BodyType<FollowOrganizationInput>
+    export type FollowOrganizationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Follow an organization
+ */
+export const useFollowOrganization = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followOrganization>>, TError,{id: number;data: BodyType<FollowOrganizationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof followOrganization>>,
+        TError,
+        {id: number;data: BodyType<FollowOrganizationInput>},
+        TContext
+      > => {
+      return useMutation(getFollowOrganizationMutationOptions(options));
+    }
+
+export const getUnfollowOrganizationUrl = (id: number,
+    organizationId: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/following/${organizationId}`
+}
+
+/**
+ * @summary Unfollow an organization
+ */
+export const unfollowOrganization = async (id: number,
+    organizationId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getUnfollowOrganizationUrl(id,organizationId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getUnfollowOrganizationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowOrganization>>, TError,{id: number;organizationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unfollowOrganization>>, TError,{id: number;organizationId: number}, TContext> => {
+
+const mutationKey = ['unfollowOrganization'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unfollowOrganization>>, {id: number;organizationId: number}> = (props) => {
+          const {id,organizationId} = props ?? {};
+
+          return  unfollowOrganization(id,organizationId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnfollowOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof unfollowOrganization>>>
+
+    export type UnfollowOrganizationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unfollow an organization
+ */
+export const useUnfollowOrganization = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowOrganization>>, TError,{id: number;organizationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unfollowOrganization>>,
+        TError,
+        {id: number;organizationId: number},
+        TContext
+      > => {
+      return useMutation(getUnfollowOrganizationMutationOptions(options));
     }
 
 export const getListApplicationsUrl = (params?: ListApplicationsParams,) => {

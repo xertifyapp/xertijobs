@@ -135,6 +135,8 @@ export interface Organization {
   contactEmail?: string | null;
   /** pendiente | aprobada | rechazada */
   status: string;
+  /** @nullable */
+  followersCount?: number | null;
   createdAt: string;
 }
 
@@ -322,6 +324,16 @@ export interface SavedOpportunity {
 
 export interface SavedOpportunityInput {
   opportunityId: number;
+}
+
+export interface FollowOrganization {
+  id: number;
+  professionalId: number;
+  organizationId: number;
+}
+
+export interface FollowOrganizationInput {
+  organizationId: number;
 }
 
 export interface Application {

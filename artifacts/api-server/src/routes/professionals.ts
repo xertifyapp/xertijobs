@@ -7,6 +7,7 @@ import {
   savedOpportunitiesTable,
   opportunitiesTable,
   organizationsTable,
+  organizationFollowsTable,
   applicationsTable,
 } from "@workspace/db";
 import {
@@ -25,6 +26,12 @@ import {
   SaveOpportunityBody,
   SaveOpportunityResponse,
   UnsaveOpportunityParams,
+  ListFollowedOrganizationsParams,
+  ListFollowedOrganizationsResponse,
+  FollowOrganizationParams,
+  FollowOrganizationBody,
+  FollowOrganizationResponse,
+  UnfollowOrganizationParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/auth";
 import { t } from "../lib/i18n";
@@ -243,6 +250,115 @@ router.delete("/professionals/:id/saved/:opportunityId", requireRole("postulante
       and(
         eq(savedOpportunitiesTable.professionalId, params.data.id),
         eq(savedOpportunitiesTable.opportunityId, params.data.opportunityId),
+      ),
+    );
+
+  res.sendStatus(204);
+});
+
+router.get("/professionals/:id/following", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
+  const params = ListFollowedOrganizationsParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+    return;
+  }
+  if (!canManageProfessional(req, res, params.data.id)) return;
+
+  const rows = await db
+    .select({
+      id: organizationsTable.id,
+      name: organizationsTable.name,
+      type: organizationsTable.type,
+      country: organizationsTable.country,
+      city: organizationsTable.city,
+      website: organizationsTable.website,
+      logoUrl: organizationsTable.logoUrl,
+      description: organizationsTable.description,
+      contactEmail: organizationsTable.contactEmail,
+      status: organizationsTable.status,
+      createdAt: organizationsTable.createdAt,
+      followersCount: sql<number>`(select count(*)::int from ${organizationFollowsTable} where ${organizationFollowsTable.organizationId} = ${organizationsTable.id})`,
+    })
+    .from(organizationFollowsTable)
+    .innerJoin(organizationsTable, eq(organizationFollowsTable.organizationId, organizationsTable.id))
+    .where(eq(organizationFollowsTable.professionalId, params.data.id))
+    .orderBy(desc(organizationFollowsTable.createdAt));
+
+  res.json(ListFollowedOrganizationsResponse.parse(serializeDates(rows)));
+});
+
+router.post("/professionals/:id/following", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
+  const params = FollowOrganizationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+    return;
+  }
+  if (!canManageProfessional(req, res, params.data.id)) return;
+
+  const parsed = FollowOrganizationBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
+    return;
+  }
+
+  const [professional] = await db
+    .select({ id: professionalsTable.id })
+    .from(professionalsTable)
+    .where(eq(professionalsTable.id, params.data.id));
+  if (!professional) {
+    res.status(400).json({ error: t(req.locale, "common.professionalNotExist") });
+    return;
+  }
+
+  const [organization] = await db
+    .select({ id: organizationsTable.id })
+    .from(organizationsTable)
+    .where(eq(organizationsTable.id, parsed.data.organizationId));
+  if (!organization) {
+    res.status(400).json({ error: t(req.locale, "organizations.notFound") });
+    return;
+  }
+
+  const [inserted] = await db
+    .insert(organizationFollowsTable)
+    .values({ professionalId: params.data.id, organizationId: parsed.data.organizationId })
+    .onConflictDoNothing({
+      target: [organizationFollowsTable.professionalId, organizationFollowsTable.organizationId],
+    })
+    .returning();
+
+  if (inserted) {
+    res.status(201).json(FollowOrganizationResponse.parse(serializeDates(inserted)));
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(organizationFollowsTable)
+    .where(
+      and(
+        eq(organizationFollowsTable.professionalId, params.data.id),
+        eq(organizationFollowsTable.organizationId, parsed.data.organizationId),
+      ),
+    );
+
+  res.status(201).json(FollowOrganizationResponse.parse(serializeDates(existing)));
+});
+
+router.delete("/professionals/:id/following/:organizationId", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
+  const params = UnfollowOrganizationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
+    return;
+  }
+  if (!canManageProfessional(req, res, params.data.id)) return;
+
+  await db
+    .delete(organizationFollowsTable)
+    .where(
+      and(
+        eq(organizationFollowsTable.professionalId, params.data.id),
+        eq(organizationFollowsTable.organizationId, params.data.organizationId),
       ),
     );
 

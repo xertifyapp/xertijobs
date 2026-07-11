@@ -14,6 +14,8 @@ export * from './authUser';
 export * from './authUserPreferredLanguage';
 export * from './countByKey';
 export * from './errorEnvelope';
+export * from './followOrganization';
+export * from './followOrganizationInput';
 export * from './globalStats';
 export * from './healthStatus';
 export * from './listApplicationsParams';

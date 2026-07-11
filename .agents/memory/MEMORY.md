@@ -1,1 +1,2 @@
 - [i18n architecture](i18n.md) — how es/en/pt localization is wired across frontend + backend in SEMBER CONNECT.
+- [Express 5 routing](express5-routing.md) — no `:x?` optional params (runtime crash, not build error); use path arrays, coerce string|string[] params.

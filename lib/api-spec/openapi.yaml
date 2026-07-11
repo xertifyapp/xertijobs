@@ -488,6 +488,64 @@ paths:
       responses:
         "204":
           description: Removed
+  /professionals/{id}/following:
+    get:
+      operationId: listFollowedOrganizations
+      tags: [professionals]
+      summary: List organizations followed by a professional
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Followed organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+    post:
+      operationId: followOrganization
+      tags: [professionals]
+      summary: Follow an organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowOrganizationInput"
+      responses:
+        "201":
+          description: Following
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowOrganization"
+  /professionals/{id}/following/{organizationId}:
+    delete:
+      operationId: unfollowOrganization
+      tags: [professionals]
+      summary: Unfollow an organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: organizationId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Removed
   /applications:
     get:
       operationId: listApplications
@@ -782,6 +840,7 @@ components:
         description: { type: ["string", "null"] }
         contactEmail: { type: ["string", "null"] }
         status: { type: string, description: "pendiente | aprobada | rechazada" }
+        followersCount: { type: ["integer", "null"] }
         createdAt: { type: string }
     OrganizationInput:
       type: object
@@ -991,6 +1050,18 @@ components:
       required: [opportunityId]
       properties:
         opportunityId: { type: integer }
+    FollowOrganization:
+      type: object
+      required: [id, professionalId, organizationId]
+      properties:
+        id: { type: integer }
+        professionalId: { type: integer }
+        organizationId: { type: integer }
+    FollowOrganizationInput:
+      type: object
+      required: [organizationId]
+      properties:
+        organizationId: { type: integer }
     Application:
       type: object
       required: [id, opportunityId, professionalId, status, createdAt]

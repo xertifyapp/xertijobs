@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import shareRouter from "./routes/share";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./lib/session";
 import { localeMiddleware } from "./middlewares/locale";
@@ -56,6 +57,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(localeMiddleware);
 app.use(sessionMiddleware);
 
+app.use(shareRouter);
 app.use("/api", router);
 
 export default app;

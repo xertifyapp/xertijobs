@@ -53,6 +53,37 @@
       },
       "publishedOn": "Publicada em {{date}}",
       "views": "{{count}} visualizações",
+      "share": {
+        "button": "Compartilhar",
+        "native": "Compartilhar...",
+        "whatsapp": "WhatsApp",
+        "linkedin": "LinkedIn",
+        "x": "X (Twitter)",
+        "facebook": "Facebook",
+        "telegram": "Telegram",
+        "copy": "Copiar link",
+        "copied": "Link copiado para a área de transferência",
+        "copyError": "Não foi possível copiar o link"
+      },
+      "institution": {
+        "title": "Instituição",
+        "viewProfile": "Ver todas as organizações",
+        "website": "Site"
+      },
+      "contact": {
+        "title": "Contato",
+        "description": "Tem dúvidas sobre esta oportunidade? Fale com a instituição."
+      },
+      "follow": {
+        "follow": "Seguir instituição",
+        "following": "Seguindo",
+        "followersCount_one": "{{count}} seguidor",
+        "followersCount_other": "{{count}} seguidores",
+        "toast": {
+          "followed": "Agora você segue esta instituição",
+          "unfollowed": "Você deixou de seguir esta instituição"
+        }
+      },
       "toast": {
         "removed": "Oportunidade removida dos salvos",
         "saved": "Oportunidade salva com sucesso",

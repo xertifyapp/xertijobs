@@ -1,6 +1,6 @@
 import { serializeDates } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, ne, or, sql, type SQL } from "drizzle-orm";
 import { db, opportunitiesTable, organizationsTable, applicationsTable } from "@workspace/db";
 import {
   ListOpportunitiesQueryParams,
@@ -53,6 +53,23 @@ router.get("/opportunities", async (req, res): Promise<void> => {
 
   const q = query.data;
   const conditions: SQL[] = [];
+
+  // Only published opportunities are public. Admins see everything; an empresa
+  // additionally sees its own drafts. Everyone else (public/postulante) never
+  // sees drafts (status "borrador").
+  const sessionUser = req.session.user;
+  if (sessionUser?.role === "admin") {
+    // no publication restriction
+  } else if (sessionUser?.role === "empresa" && sessionUser.organizationId) {
+    const ownDraftsVisible = or(
+      ne(opportunitiesTable.status, "borrador"),
+      eq(opportunitiesTable.organizationId, sessionUser.organizationId),
+    );
+    if (ownDraftsVisible) conditions.push(ownDraftsVisible);
+  } else {
+    conditions.push(ne(opportunitiesTable.status, "borrador"));
+  }
+
   if (q.type) conditions.push(eq(opportunitiesTable.type, q.type));
   if (q.country) conditions.push(ilike(opportunitiesTable.country, q.country));
   if (q.city) conditions.push(ilike(opportunitiesTable.city, q.city));
@@ -137,11 +154,6 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  await db
-    .update(opportunitiesTable)
-    .set({ views: sql`${opportunitiesTable.views} + 1` })
-    .where(eq(opportunitiesTable.id, params.data.id));
-
   const [opp] = await db
     .select(opportunityWithOrg)
     .from(opportunitiesTable)
@@ -152,6 +164,24 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
     return;
   }
+
+  // Only published opportunities are public. Drafts (`borrador`) are visible
+  // exclusively to the owning organization (empresa) or an admin.
+  const sessionUser = req.session.user;
+  const canSeeDraft =
+    sessionUser?.role === "admin" ||
+    (sessionUser?.role === "empresa" && sessionUser.organizationId === opp.organizationId);
+  if (opp.status === "borrador" && !canSeeDraft) {
+    res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
+    return;
+  }
+
+  // Count a view only when the opportunity is publicly visible.
+  await db
+    .update(opportunitiesTable)
+    .set({ views: sql`${opportunitiesTable.views} + 1` })
+    .where(eq(opportunitiesTable.id, params.data.id));
+  opp.views = (opp.views ?? 0) + 1;
 
   res.json(GetOpportunityResponse.parse(serializeDates(opp)));
 });
