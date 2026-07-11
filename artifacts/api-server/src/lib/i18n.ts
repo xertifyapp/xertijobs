@@ -21,6 +21,8 @@ const messages: Record<Locale, Record<string, string>> = {
     "auth.invalidCredentials": "Correo o contraseña incorrectos",
     "auth.emailNotVerified": "Debes verificar tu correo electrónico antes de iniciar sesión",
     "auth.orgPendingApproval": "Tu organización está pendiente de aprobación por el equipo de SEMBER",
+    "auth.orgSuspended": "Tu organización está suspendida. Contacta al equipo de SEMBER para más información",
+    "auth.orgRejected": "El registro de tu organización fue rechazado por el equipo de SEMBER",
     "auth.notAuthenticated": "No autenticado",
     // auth middleware
     "auth.mustLogin": "Debes iniciar sesión",
@@ -86,6 +88,8 @@ const messages: Record<Locale, Record<string, string>> = {
     "auth.invalidCredentials": "Incorrect email or password",
     "auth.emailNotVerified": "You must verify your email address before signing in",
     "auth.orgPendingApproval": "Your organization is pending approval by the SEMBER team",
+    "auth.orgSuspended": "Your organization is suspended. Please contact the SEMBER team for more information",
+    "auth.orgRejected": "Your organization's registration was rejected by the SEMBER team",
     "auth.notAuthenticated": "Not authenticated",
     // auth middleware
     "auth.mustLogin": "You must sign in",
@@ -151,6 +155,8 @@ const messages: Record<Locale, Record<string, string>> = {
     "auth.invalidCredentials": "E-mail ou senha incorretos",
     "auth.emailNotVerified": "Você deve verificar seu endereço de e-mail antes de entrar",
     "auth.orgPendingApproval": "Sua organização está pendente de aprovação pela equipe da SEMBER",
+    "auth.orgSuspended": "Sua organização está suspensa. Entre em contato com a equipe da SEMBER para mais informações",
+    "auth.orgRejected": "O registro da sua organização foi rejeitado pela equipe da SEMBER",
     "auth.notAuthenticated": "Não autenticado",
     // auth middleware
     "auth.mustLogin": "Você precisa entrar",

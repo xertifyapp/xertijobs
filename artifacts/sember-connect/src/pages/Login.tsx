@@ -66,6 +66,12 @@ export default function Login() {
         } else if (status === 403 && data?.code === "pendiente_aprobacion") {
           title = t("auth.login.errors.pendingApprovalTitle");
           description = t("auth.login.errors.pendingApprovalDesc");
+        } else if (status === 403 && data?.code === "org_suspendida") {
+          title = t("auth.login.errors.suspendedTitle");
+          description = t("auth.login.errors.suspendedDesc");
+        } else if (status === 403 && data?.code === "org_rechazada") {
+          title = t("auth.login.errors.rejectedTitle");
+          description = t("auth.login.errors.rejectedDesc");
         } else if (data?.error) {
           description = data.error;
         }

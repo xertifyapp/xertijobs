@@ -77,7 +77,9 @@
     },
     "organizationStatus": {
       "pendiente": "Pending",
-      "aprobada": "Approved",
+      "verificada": "Verified",
+      "suspendida": "Suspended",
+      "aprobada": "Verified",
       "rechazada": "Rejected"
     }
   }

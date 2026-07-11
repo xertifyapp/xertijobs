@@ -27,7 +27,15 @@ router.get("/organizations", async (req, res): Promise<void> => {
   }
 
   const conditions: SQL[] = [];
-  if (query.data.status) conditions.push(eq(organizationsTable.status, query.data.status));
+  const isAdmin = req.session.user?.role === "admin";
+  if (isAdmin) {
+    // Admins can filter by any status (or see all when unfiltered).
+    if (query.data.status) conditions.push(eq(organizationsTable.status, query.data.status));
+  } else {
+    // Non-admins (incl. anonymous) only ever see verified organizations,
+    // regardless of any client-supplied status filter.
+    conditions.push(eq(organizationsTable.status, "verificada"));
+  }
   if (query.data.type) conditions.push(eq(organizationsTable.type, query.data.type));
   if (query.data.search) {
     const term = `%${query.data.search}%`;
@@ -82,6 +90,8 @@ router.get("/organizations/:id", async (req, res): Promise<void> => {
       description: organizationsTable.description,
       contactEmail: organizationsTable.contactEmail,
       status: organizationsTable.status,
+      verifiedBy: organizationsTable.verifiedBy,
+      verifiedAt: organizationsTable.verifiedAt,
       createdAt: organizationsTable.createdAt,
       followersCount: sql<number>`(select count(*)::int from ${organizationFollowsTable} where ${organizationFollowsTable.organizationId} = ${organizationsTable.id})`,
     })
@@ -121,9 +131,15 @@ router.patch("/organizations/:id", requireRole("empresa", "admin"), async (req, 
     return;
   }
 
+  const values: Record<string, unknown> = { ...parsed.data };
+  if (sessionUser?.role === "admin" && typeof parsed.data.status === "string") {
+    values["verifiedBy"] = sessionUser.id;
+    values["verifiedAt"] = new Date();
+  }
+
   const [org] = await db
     .update(organizationsTable)
-    .set(parsed.data)
+    .set(values)
     .where(eq(organizationsTable.id, params.data.id))
     .returning();
 

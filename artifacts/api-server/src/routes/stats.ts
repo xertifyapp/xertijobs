@@ -195,9 +195,9 @@ router.get("/activity/recent", requireRole("admin"), async (req, res): Promise<v
     })),
     ...recentOrganizations.map((o) => ({
       id: o.id * 10 + 3,
-      kind: o.status === "aprobada" ? "organization_approved" : "organization_registered",
+      kind: o.status === "verificada" ? "organization_approved" : "organization_registered",
       title:
-        o.status === "aprobada"
+        o.status === "verificada"
           ? t(req.locale, "activity.orgApproved", { name: o.name })
           : t(req.locale, "activity.orgRegistered", { name: o.name }),
       subtitle: null,

@@ -27,7 +27,7 @@ async function seed(): Promise<void> {
         description:
           "La universidad pública más importante de Colombia, con programas de pregrado y posgrado en todas las áreas del conocimiento.",
         contactEmail: "internacional@unal.edu.co",
-        status: "aprobada",
+        status: "verificada",
       },
       {
         name: "Tecnológico de Monterrey",
@@ -38,7 +38,7 @@ async function seed(): Promise<void> {
         description:
           "Institución privada líder en innovación educativa y emprendimiento en América Latina.",
         contactEmail: "vinculacion@tec.mx",
-        status: "aprobada",
+        status: "verificada",
       },
       {
         name: "Globant",
@@ -49,7 +49,7 @@ async function seed(): Promise<void> {
         description:
           "Compañía global de tecnología que crea productos digitales para marcas líderes en el mundo.",
         contactEmail: "talento@globant.com",
-        status: "aprobada",
+        status: "verificada",
       },
       {
         name: "Banco Interamericano de Desarrollo",
@@ -60,7 +60,7 @@ async function seed(): Promise<void> {
         description:
           "Principal fuente de financiamiento para el desarrollo de América Latina y el Caribe.",
         contactEmail: "becas@iadb.org",
-        status: "aprobada",
+        status: "verificada",
       },
       {
         name: "Ministerio de Ciencia y Tecnología del Perú",
@@ -71,7 +71,7 @@ async function seed(): Promise<void> {
         description:
           "Entidad gubernamental que impulsa la ciencia, tecnología e innovación en el Perú.",
         contactEmail: "convocatorias@concytec.gob.pe",
-        status: "aprobada",
+        status: "verificada",
       },
       {
         name: "Fundación Chile Emprende",
@@ -94,6 +94,66 @@ async function seed(): Promise<void> {
           "ONG presente en 18 países de América Latina que trabaja por superar la pobreza en asentamientos.",
         contactEmail: "voluntariado@techo.org",
         status: "pendiente",
+      },
+      // --- Organizaciones de prueba para visualizar los estados de verificación ---
+      {
+        name: "Startup Andina (Prueba)",
+        type: "empresa",
+        country: "Bolivia",
+        city: "La Paz",
+        website: "https://startupandina.example",
+        description:
+          "Organización de prueba en estado PENDIENTE: recién registrada, a la espera de revisión por SEMBER.",
+        contactEmail: "hola@startupandina.example",
+        status: "pendiente",
+      },
+      {
+        name: "Universidad del Pacífico (Prueba)",
+        type: "universidad",
+        country: "Ecuador",
+        city: "Guayaquil",
+        website: "https://upacifico.example",
+        description:
+          "Organización de prueba en estado VERIFICADA: aprobada por SEMBER y visible públicamente.",
+        contactEmail: "vinculacion@upacifico.example",
+        status: "verificada",
+        verifiedAt: new Date("2026-05-20T14:00:00Z"),
+      },
+      {
+        name: "Consultora Global Talent (Prueba)",
+        type: "empresa",
+        country: "España",
+        city: "Madrid",
+        website: "https://globaltalent.example",
+        description:
+          "Organización de prueba en estado VERIFICADA: empresa verificada que puede publicar oportunidades.",
+        contactEmail: "rrhh@globaltalent.example",
+        status: "verificada",
+        verifiedAt: new Date("2026-06-01T09:30:00Z"),
+      },
+      {
+        name: "ONG Manos Unidas (Prueba)",
+        type: "ong",
+        country: "Guatemala",
+        city: "Ciudad de Guatemala",
+        website: "https://manosunidas.example",
+        description:
+          "Organización de prueba en estado SUSPENDIDA: estuvo verificada pero SEMBER suspendió su actividad.",
+        contactEmail: "contacto@manosunidas.example",
+        status: "suspendida",
+        verifiedAt: new Date("2026-04-10T11:00:00Z"),
+      },
+      {
+        name: "Corporación Sin Registro (Prueba)",
+        type: "empresa",
+        country: "Paraguay",
+        city: "Asunción",
+        website: "https://sinregistro.example",
+        description:
+          "Organización de prueba en estado RECHAZADA: su solicitud de ingreso fue rechazada por SEMBER.",
+        contactEmail: "info@sinregistro.example",
+        status: "rechazada",
+        verifiedAt: new Date("2026-05-05T16:45:00Z"),
       },
     ])
     .returning();

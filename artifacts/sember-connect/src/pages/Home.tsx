@@ -13,7 +13,7 @@ export default function Home() {
   const { t } = useTranslation();
   const { opportunityTypeLabel, modalityLabel } = useDomainLabels();
   const { data: opportunities } = useListOpportunities({ status: "activa" });
-  const { data: organizations } = useListOrganizations({ status: "aprobada" });
+  const { data: organizations } = useListOrganizations({ status: "verificada" });
 
   const recentOpps = opportunities?.slice(0, 6) || [];
   const featuredOrgs = organizations?.slice(0, 4) || [];

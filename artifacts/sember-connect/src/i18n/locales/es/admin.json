@@ -17,19 +17,24 @@
     "pending": {
       "cardTitle": "Solicitudes de Ingreso ({{count}})",
       "empty": "No hay solicitudes pendientes.",
-      "approve": "Aprobar",
+      "verify": "Verificar",
       "reject": "Rechazar"
     },
     "all": {
-      "approve": "Aprobar"
+      "verify": "Verificar",
+      "suspend": "Suspender",
+      "reject": "Rechazar",
+      "verifiedOn": "Verificada el {{date}}"
     },
     "activity": {
       "title": "Actividad Reciente",
       "empty": "No hay actividad reciente."
     },
     "toast": {
-      "approved": "Organización aprobada",
-      "rejected": "Organización rechazada"
+      "verificada": "Organización verificada",
+      "suspendida": "Organización suspendida",
+      "rechazada": "Organización rechazada",
+      "pendiente": "Organización marcada como pendiente"
     }
   }
 }

@@ -2,7 +2,7 @@
   "panel": {
     "title": "Painel Institucional",
     "selectOrgPlaceholder": "Selecionar Organização",
-    "noOrgs": "Não há organizações aprovadas disponíveis.",
+    "noOrgs": "Não há organizações verificadas disponíveis.",
     "registerOrg": "Registrar uma Organização",
     "stats": {
       "totalViews": "Visualizações Totais",

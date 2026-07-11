@@ -166,7 +166,9 @@ export const ListOrganizationsResponseItem = zod.object({
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
-  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
+  "verifiedBy": zod.number().nullish(),
+  "verifiedAt": zod.string().nullish(),
   "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
@@ -200,7 +202,9 @@ export const CreateOrganizationResponse = zod.object({
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
-  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
+  "verifiedBy": zod.number().nullish(),
+  "verifiedAt": zod.string().nullish(),
   "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
@@ -223,7 +227,9 @@ export const GetOrganizationResponse = zod.object({
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
-  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
+  "verifiedBy": zod.number().nullish(),
+  "verifiedAt": zod.string().nullish(),
   "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
@@ -261,7 +267,9 @@ export const UpdateOrganizationResponse = zod.object({
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
-  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
+  "verifiedBy": zod.number().nullish(),
+  "verifiedAt": zod.string().nullish(),
   "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })
@@ -724,7 +732,9 @@ export const ListFollowedOrganizationsResponseItem = zod.object({
   "logoUrl": zod.string().nullish(),
   "description": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
-  "status": zod.string().describe('pendiente | aprobada | rechazada'),
+  "status": zod.string().describe('pendiente | verificada | suspendida | rechazada'),
+  "verifiedBy": zod.number().nullish(),
+  "verifiedAt": zod.string().nullish(),
   "followersCount": zod.number().nullish(),
   "createdAt": zod.string()
 })

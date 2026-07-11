@@ -22,10 +22,13 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleApprove = (id: number) => {
-    updateOrg.mutate({ id, data: { status: "aprobada" } }, {
+  const handleChangeStatus = (id: number, status: string) => {
+    updateOrg.mutate({ id, data: { status } }, {
       onSuccess: () => {
-        toast({ title: t("admin.toast.approved") });
+        toast({
+          title: t(`admin.toast.${status}`),
+          variant: status === "rechazada" || status === "suspendida" ? "destructive" : "default",
+        });
         queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
         queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
@@ -33,16 +36,8 @@ export default function Admin() {
     });
   };
 
-  const handleReject = (id: number) => {
-    updateOrg.mutate({ id, data: { status: "rechazada" } }, {
-      onSuccess: () => {
-        toast({ title: t("admin.toast.rejected"), variant: "destructive" });
-        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
-        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
-      }
-    });
-  };
+  const handleApprove = (id: number) => handleChangeStatus(id, "verificada");
+  const handleReject = (id: number) => handleChangeStatus(id, "rechazada");
 
   return (
     <MainLayout>
@@ -148,7 +143,7 @@ export default function Admin() {
                             </div>
                             <div className="flex flex-row md:flex-col gap-2 shrink-0">
                               <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(org.id)} disabled={updateOrg.isPending}>
-                                <CheckCircle className="w-4 h-4 mr-1" /> {t("admin.pending.approve")}
+                                <CheckCircle className="w-4 h-4 mr-1" /> {t("admin.pending.verify")}
                               </Button>
                               <Button size="sm" variant="destructive" onClick={() => handleReject(org.id)} disabled={updateOrg.isPending}>
                                 <XCircle className="w-4 h-4 mr-1" /> {t("admin.pending.reject")}
@@ -167,17 +162,30 @@ export default function Admin() {
                   <CardContent className="p-0">
                     <div className="divide-y">
                       {allOrgs?.map(org => (
-                        <div key={org.id} className="p-4 flex justify-between items-center">
+                        <div key={org.id} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-bold">{org.name}</h4>
                               <Badge className={STATUS_COLORS[org.status]}>{organizationStatusLabel(org.status)}</Badge>
                             </div>
                             <div className="text-sm text-muted-foreground">{organizationTypeLabel(org.type)} · {org.country}</div>
+                            {org.verifiedAt && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {t("admin.all.verifiedOn", { date: new Date(org.verifiedAt).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' }) })}
+                              </div>
+                            )}
                           </div>
-                          {org.status === 'pendiente' && (
-                            <Button variant="outline" size="sm" onClick={() => handleApprove(org.id)}>{t("admin.all.approve")}</Button>
-                          )}
+                          <div className="flex flex-wrap gap-2 shrink-0">
+                            {(org.status === 'pendiente' || org.status === 'rechazada' || org.status === 'suspendida') && (
+                              <Button variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50" onClick={() => handleChangeStatus(org.id, "verificada")} disabled={updateOrg.isPending}>{t("admin.all.verify")}</Button>
+                            )}
+                            {org.status === 'verificada' && (
+                              <Button variant="outline" size="sm" className="text-orange-700 border-orange-300 hover:bg-orange-50" onClick={() => handleChangeStatus(org.id, "suspendida")} disabled={updateOrg.isPending}>{t("admin.all.suspend")}</Button>
+                            )}
+                            {org.status !== 'rechazada' && (
+                              <Button variant="outline" size="sm" className="text-red-700 border-red-300 hover:bg-red-50" onClick={() => handleChangeStatus(org.id, "rechazada")} disabled={updateOrg.isPending}>{t("admin.all.reject")}</Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -1,5 +1,5 @@
-import { inArray, isNull, and } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import { inArray, isNull, and, eq } from "drizzle-orm";
+import { db, usersTable, organizationsTable } from "@workspace/db";
 import { logger } from "./logger";
 
 const DEMO_ACCOUNT_EMAILS = [
@@ -34,5 +34,30 @@ export async function ensureDemoAccountsVerified(): Promise<void> {
     }
   } catch (err) {
     logger.error({ err }, "Failed to verify demo accounts on startup");
+  }
+}
+
+/**
+ * Backfills the legacy organization status `aprobada` to the new `verificada`
+ * value. Idempotent and safe to run on every startup so existing environments
+ * (incl. production, which uses a separate DB and is not seeded) migrate to the
+ * 4-state verification model without any manual SQL.
+ */
+export async function ensureOrgStatusMigrated(): Promise<void> {
+  try {
+    const updated = await db
+      .update(organizationsTable)
+      .set({ status: "verificada" })
+      .where(eq(organizationsTable.status, "aprobada"))
+      .returning({ id: organizationsTable.id });
+
+    if (updated.length > 0) {
+      logger.info(
+        { count: updated.length },
+        "Migrated legacy organization status aprobada -> verificada on startup",
+      );
+    }
+  } catch (err) {
+    logger.error({ err }, "Failed to migrate legacy organization status on startup");
   }
 }

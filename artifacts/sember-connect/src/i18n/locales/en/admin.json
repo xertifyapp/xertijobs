@@ -17,19 +17,24 @@
     "pending": {
       "cardTitle": "Membership Requests ({{count}})",
       "empty": "There are no pending requests.",
-      "approve": "Approve",
+      "verify": "Verify",
       "reject": "Reject"
     },
     "all": {
-      "approve": "Approve"
+      "verify": "Verify",
+      "suspend": "Suspend",
+      "reject": "Reject",
+      "verifiedOn": "Verified on {{date}}"
     },
     "activity": {
       "title": "Recent Activity",
       "empty": "There is no recent activity."
     },
     "toast": {
-      "approved": "Organization approved",
-      "rejected": "Organization rejected"
+      "verificada": "Organization verified",
+      "suspendida": "Organization suspended",
+      "rechazada": "Organization rejected",
+      "pendiente": "Organization set to pending"
     }
   }
 }

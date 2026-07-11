@@ -17,7 +17,7 @@ export default function Organizations() {
   const [type, setType] = useState<string>("all");
 
   const { data: organizations, isLoading } = useListOrganizations({
-    status: "aprobada",
+    status: "verificada",
     ...(search && { search }),
     ...(type !== "all" && { type }),
   });

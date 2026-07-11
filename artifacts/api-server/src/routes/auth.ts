@@ -234,7 +234,21 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       .select()
       .from(organizationsTable)
       .where(eq(organizationsTable.id, user.organizationId));
-    if (!org || org.status !== "aprobada") {
+    if (!org || org.status !== "verificada") {
+      if (org?.status === "suspendida") {
+        res.status(403).json({
+          error: t(req.locale, "auth.orgSuspended"),
+          code: "org_suspendida",
+        });
+        return;
+      }
+      if (org?.status === "rechazada") {
+        res.status(403).json({
+          error: t(req.locale, "auth.orgRejected"),
+          code: "org_rechazada",
+        });
+        return;
+      }
       res.status(403).json({
         error: t(req.locale, "auth.orgPendingApproval"),
         code: "pendiente_aprobacion",

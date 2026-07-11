@@ -133,8 +133,12 @@ export interface Organization {
   description?: string | null;
   /** @nullable */
   contactEmail?: string | null;
-  /** pendiente | aprobada | rechazada */
+  /** pendiente | verificada | suspendida | rechazada */
   status: string;
+  /** @nullable */
+  verifiedBy?: number | null;
+  /** @nullable */
+  verifiedAt?: string | null;
   /** @nullable */
   followersCount?: number | null;
   createdAt: string;

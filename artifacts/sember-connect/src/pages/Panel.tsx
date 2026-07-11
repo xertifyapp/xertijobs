@@ -52,7 +52,7 @@ export default function Panel() {
   const { opportunityTypes, modalities, applicationStatusLabel, opportunityStatusLabel, modalityLabel } = useDomainLabels();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const { data: orgs, isLoading: isOrgsLoading } = useListOrganizations({ status: "aprobada" }, { query: { enabled: isAdmin, queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) } });
+  const { data: orgs, isLoading: isOrgsLoading } = useListOrganizations({ status: "verificada" }, { query: { enabled: isAdmin, queryKey: getListOrganizationsQueryKey({ status: "verificada" }) } });
   const [selectedOrgId, setSelectedOrgId] = useState<string>("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -101,7 +101,7 @@ export default function Panel() {
       updateOrg.mutate({ id: currentOrgId, data: { logoUrl: res.objectPath } }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetOrganizationQueryKey(currentOrgId) });
-          queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) });
+          queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "verificada" }) });
           toast({ title: t("panel.toast.logoUpdated") });
         },
         onError: () => toast({ title: t("panel.toast.logoSaveError"), variant: "destructive" }),
@@ -121,7 +121,7 @@ export default function Panel() {
       onSuccess: () => {
         toast({ title: t("panel.toast.orgUpdated") });
         queryClient.invalidateQueries({ queryKey: getGetOrganizationQueryKey(currentOrgId) });
-        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "aprobada" }) });
+        queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "verificada" }) });
       },
       onError: () => toast({ title: t("panel.toast.orgUpdateError"), variant: "destructive" }),
     });

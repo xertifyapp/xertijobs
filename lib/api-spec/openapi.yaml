@@ -839,7 +839,9 @@ components:
         logoUrl: { type: ["string", "null"] }
         description: { type: ["string", "null"] }
         contactEmail: { type: ["string", "null"] }
-        status: { type: string, description: "pendiente | aprobada | rechazada" }
+        status: { type: string, description: "pendiente | verificada | suspendida | rechazada" }
+        verifiedBy: { type: ["integer", "null"] }
+        verifiedAt: { type: ["string", "null"] }
         followersCount: { type: ["integer", "null"] }
         createdAt: { type: string }
     OrganizationInput:

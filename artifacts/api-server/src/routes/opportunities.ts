@@ -54,20 +54,23 @@ router.get("/opportunities", async (req, res): Promise<void> => {
   const q = query.data;
   const conditions: SQL[] = [];
 
-  // Only published opportunities are public. Admins see everything; an empresa
-  // additionally sees its own drafts. Everyone else (public/postulante) never
-  // sees drafts (status "borrador").
+  // An opportunity is public only when it is published (not "borrador") AND its
+  // organization is verified ("verificada"). Unverified orgs cannot publish
+  // globally. Admins see everything; an empresa additionally sees all of its own
+  // opportunities regardless of its verification status.
   const sessionUser = req.session.user;
   if (sessionUser?.role === "admin") {
     // no publication restriction
   } else if (sessionUser?.role === "empresa" && sessionUser.organizationId) {
-    const ownDraftsVisible = or(
+    const publiclyVisible = and(
       ne(opportunitiesTable.status, "borrador"),
-      eq(opportunitiesTable.organizationId, sessionUser.organizationId),
+      eq(organizationsTable.status, "verificada"),
     );
-    if (ownDraftsVisible) conditions.push(ownDraftsVisible);
+    const visible = or(publiclyVisible, eq(opportunitiesTable.organizationId, sessionUser.organizationId));
+    if (visible) conditions.push(visible);
   } else {
     conditions.push(ne(opportunitiesTable.status, "borrador"));
+    conditions.push(eq(organizationsTable.status, "verificada"));
   }
 
   if (q.type) conditions.push(eq(opportunitiesTable.type, q.type));
@@ -155,7 +158,7 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
   }
 
   const [opp] = await db
-    .select(opportunityWithOrg)
+    .select({ ...opportunityWithOrg, organizationStatus: organizationsTable.status })
     .from(opportunitiesTable)
     .innerJoin(organizationsTable, eq(opportunitiesTable.organizationId, organizationsTable.id))
     .where(eq(opportunitiesTable.id, params.data.id));
@@ -165,13 +168,15 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  // Only published opportunities are public. Drafts (`borrador`) are visible
-  // exclusively to the owning organization (empresa) or an admin.
+  // Published opportunities from verified orgs are public. Drafts (`borrador`)
+  // and opportunities from non-verified orgs are visible exclusively to the
+  // owning organization (empresa) or an admin.
   const sessionUser = req.session.user;
-  const canSeeDraft =
+  const isPrivileged =
     sessionUser?.role === "admin" ||
     (sessionUser?.role === "empresa" && sessionUser.organizationId === opp.organizationId);
-  if (opp.status === "borrador" && !canSeeDraft) {
+  const publiclyVisible = opp.status !== "borrador" && opp.organizationStatus === "verificada";
+  if (!publiclyVisible && !isPrivileged) {
     res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
     return;
   }
