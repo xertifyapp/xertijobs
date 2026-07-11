@@ -43,13 +43,16 @@ router.get(["/compartir/:id", "/compartir/:id/:slug"], async (req, res): Promise
       country: opportunitiesTable.country,
       city: opportunitiesTable.city,
       organizationName: organizationsTable.name,
+      organizationStatus: organizationsTable.status,
       logoUrl: organizationsTable.logoUrl,
     })
     .from(opportunitiesTable)
     .innerJoin(organizationsTable, eq(opportunitiesTable.organizationId, organizationsTable.id))
     .where(eq(opportunitiesTable.id, id));
 
-  if (!opp || opp.status === "borrador") {
+  // Public share previews only for published opportunities whose organization
+  // is verified — mirrors the visibility rules on GET /opportunities(/:id).
+  if (!opp || opp.status === "borrador" || opp.organizationStatus !== "verificada") {
     res.redirect(302, `${origin}/oportunidades`);
     return;
   }
