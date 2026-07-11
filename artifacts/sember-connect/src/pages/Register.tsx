@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useDomainLabels } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
+import { getCurrentLanguage } from "@/i18n";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useSearch } from "wouter";
@@ -101,7 +102,7 @@ export default function Register() {
 
   const onSubmitPostulante = (values: z.infer<typeof postulanteSchema>) => {
     register.mutate(
-      { data: { role: "postulante", name: values.name, email: values.email, password: values.password } },
+      { data: { role: "postulante", name: values.name, email: values.email, password: values.password, preferredLanguage: getCurrentLanguage() } },
       {
         onSuccess: (r) => handleRegisterSuccess(r.email, "postulante", r.emailSent),
         onError: onRegisterError,
@@ -117,6 +118,7 @@ export default function Register() {
           name: values.name,
           email: values.email,
           password: values.password,
+          preferredLanguage: getCurrentLanguage(),
           organization: {
             name: values.orgName,
             type: values.orgType,

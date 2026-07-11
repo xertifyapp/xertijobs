@@ -14,6 +14,7 @@ import Panel from "@/pages/Panel";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import { RequireAuth } from "@/components/RequireAuth";
+import { LanguageSync } from "@/components/LanguageSync";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +61,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <LanguageSync />
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>

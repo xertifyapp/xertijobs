@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrganizationInput } from './organizationInput';
+import type { RegisterInputPreferredLanguage } from './registerInputPreferredLanguage';
 import type { RegisterInputRole } from './registerInputRole';
 
 export interface RegisterInput {
@@ -16,5 +17,6 @@ export interface RegisterInput {
   email: string;
   /** @minLength 8 */
   password: string;
+  preferredLanguage?: RegisterInputPreferredLanguage;
   organization?: OrganizationInput;
 }

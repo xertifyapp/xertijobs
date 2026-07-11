@@ -12,6 +12,7 @@ export const usersTable = pgTable("users", {
   name: text("name").notNull(),
   professionalId: integer("professional_id").references(() => professionalsTable.id),
   organizationId: integer("organization_id").references(() => organizationsTable.id),
+  preferredLanguage: text("preferred_language").notNull().default("es"),
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

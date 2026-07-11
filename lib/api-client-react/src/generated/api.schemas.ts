@@ -24,6 +24,15 @@ export const RegisterInputRole = {
   empresa: 'empresa',
 } as const;
 
+export type RegisterInputPreferredLanguage = typeof RegisterInputPreferredLanguage[keyof typeof RegisterInputPreferredLanguage];
+
+
+export const RegisterInputPreferredLanguage = {
+  es: 'es',
+  en: 'en',
+  pt: 'pt',
+} as const;
+
 export interface OrganizationInput {
   /** @minLength 1 */
   name: string;
@@ -44,6 +53,7 @@ export interface RegisterInput {
   email: string;
   /** @minLength 8 */
   password: string;
+  preferredLanguage?: RegisterInputPreferredLanguage;
   organization?: OrganizationInput;
 }
 
@@ -72,6 +82,15 @@ export interface ResendOtpInput {
   email: string;
 }
 
+export type AuthUserPreferredLanguage = typeof AuthUserPreferredLanguage[keyof typeof AuthUserPreferredLanguage];
+
+
+export const AuthUserPreferredLanguage = {
+  es: 'es',
+  en: 'en',
+  pt: 'pt',
+} as const;
+
 export interface AuthUser {
   id: number;
   email: string;
@@ -82,6 +101,20 @@ export interface AuthUser {
   professionalId?: number | null;
   /** @nullable */
   organizationId?: number | null;
+  preferredLanguage: AuthUserPreferredLanguage;
+}
+
+export type UpdatePreferencesInputPreferredLanguage = typeof UpdatePreferencesInputPreferredLanguage[keyof typeof UpdatePreferencesInputPreferredLanguage];
+
+
+export const UpdatePreferencesInputPreferredLanguage = {
+  es: 'es',
+  en: 'en',
+  pt: 'pt',
+} as const;
+
+export interface UpdatePreferencesInput {
+  preferredLanguage: UpdatePreferencesInputPreferredLanguage;
 }
 
 export interface Organization {

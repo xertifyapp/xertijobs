@@ -18,9 +18,10 @@ import {
   VerifyEmailBody,
   VerifyEmailResponse,
   ResendOtpBody,
+  UpdatePreferencesBody,
 } from "@workspace/api-zod";
 import { sendOtpEmail } from "../lib/mailer";
-import { t } from "../lib/i18n";
+import { t, type Locale } from "../lib/i18n";
 
 const router: IRouter = Router();
 
@@ -109,16 +110,18 @@ router.post("/auth/register", async (req, res): Promise<void> => {
         name: parsed.data.name,
         professionalId,
         organizationId,
+        preferredLanguage: parsed.data.preferredLanguage ?? req.locale,
         emailVerifiedAt: null,
       })
       .returning();
     return user.id;
   });
 
+  const emailLocale: Locale = parsed.data.preferredLanguage ?? req.locale;
   const code = await issueOtp(userId);
   let emailSent = true;
   try {
-    await sendOtpEmail(email, parsed.data.name, code, req.locale);
+    await sendOtpEmail(email, parsed.data.name, code, emailLocale);
   } catch (err) {
     req.log.error({ err }, "OTP email send failed on register");
     emailSent = false;
@@ -193,7 +196,7 @@ router.post("/auth/resend-otp", async (req, res): Promise<void> => {
 
   const code = await issueOtp(user.id);
   try {
-    await sendOtpEmail(email, user.name, code, req.locale);
+    await sendOtpEmail(email, user.name, code, user.preferredLanguage as Locale);
   } catch (err) {
     req.log.error({ err }, "OTP email send failed on resend");
     res.status(502).json({ error: t(req.locale, "auth.emailSendFailed") });
@@ -263,6 +266,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       name: user.name,
       professionalId: user.professionalId,
       organizationId: user.organizationId,
+      preferredLanguage: user.preferredLanguage,
     }),
   );
 });
@@ -296,6 +300,43 @@ router.get("/auth/me", async (req, res): Promise<void> => {
       name: user.name,
       professionalId: user.professionalId,
       organizationId: user.organizationId,
+      preferredLanguage: user.preferredLanguage,
+    }),
+  );
+});
+
+router.patch("/auth/me", async (req, res): Promise<void> => {
+  const sessionUser = req.session.user;
+  if (!sessionUser) {
+    res.status(401).json({ error: t(req.locale, "auth.notAuthenticated") });
+    return;
+  }
+
+  const parsed = UpdatePreferencesBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
+    return;
+  }
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ preferredLanguage: parsed.data.preferredLanguage })
+    .where(eq(usersTable.id, sessionUser.id))
+    .returning();
+  if (!user) {
+    res.status(401).json({ error: t(req.locale, "auth.notAuthenticated") });
+    return;
+  }
+
+  res.status(200).json(
+    GetCurrentUserResponse.parse({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      professionalId: user.professionalId,
+      organizationId: user.organizationId,
+      preferredLanguage: user.preferredLanguage,
     }),
   );
 });

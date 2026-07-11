@@ -35,7 +35,8 @@ export const LoginResponse = zod.object({
   "role": zod.string().describe('postulante | empresa | admin'),
   "name": zod.string(),
   "professionalId": zod.number().nullish(),
-  "organizationId": zod.number().nullish()
+  "organizationId": zod.number().nullish(),
+  "preferredLanguage": zod.enum(['es', 'en', 'pt'])
 })
 
 
@@ -56,6 +57,7 @@ export const RegisterBody = zod.object({
   "name": zod.string().min(registerBodyNameMin),
   "email": zod.string().min(registerBodyEmailMin),
   "password": zod.string().min(registerBodyPasswordMin),
+  "preferredLanguage": zod.enum(['es', 'en', 'pt']).optional(),
   "organization": zod.object({
   "name": zod.string().min(1),
   "type": zod.string(),
@@ -122,7 +124,26 @@ export const GetCurrentUserResponse = zod.object({
   "role": zod.string().describe('postulante | empresa | admin'),
   "name": zod.string(),
   "professionalId": zod.number().nullish(),
-  "organizationId": zod.number().nullish()
+  "organizationId": zod.number().nullish(),
+  "preferredLanguage": zod.enum(['es', 'en', 'pt'])
+})
+
+
+/**
+ * @summary Actualizar preferencias del usuario actual
+ */
+export const UpdatePreferencesBody = zod.object({
+  "preferredLanguage": zod.enum(['es', 'en', 'pt'])
+})
+
+export const UpdatePreferencesResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "role": zod.string().describe('postulante | empresa | admin'),
+  "name": zod.string(),
+  "professionalId": zod.number().nullish(),
+  "organizationId": zod.number().nullish(),
+  "preferredLanguage": zod.enum(['es', 'en', 'pt'])
 })
 
 

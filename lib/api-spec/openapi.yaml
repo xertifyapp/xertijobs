@@ -129,6 +129,25 @@ paths:
                 $ref: "#/components/schemas/AuthUser"
         "401":
           description: No autenticado
+    patch:
+      operationId: updatePreferences
+      tags: [auth]
+      summary: Actualizar preferencias del usuario actual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePreferencesInput"
+      responses:
+        "200":
+          description: Preferencias actualizadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: No autenticado
   /organizations:
     get:
       operationId: listOrganizations
@@ -707,6 +726,7 @@ components:
         name: { type: string, minLength: 2 }
         email: { type: string, minLength: 3 }
         password: { type: string, minLength: 8 }
+        preferredLanguage: { type: string, enum: [es, en, pt] }
         organization:
           $ref: "#/components/schemas/OrganizationInput"
     RegisterResult:
@@ -734,7 +754,7 @@ components:
         email: { type: string, minLength: 1 }
     AuthUser:
       type: object
-      required: [id, email, role, name]
+      required: [id, email, role, name, preferredLanguage]
       properties:
         id: { type: integer }
         email: { type: string }
@@ -742,6 +762,12 @@ components:
         name: { type: string }
         professionalId: { type: ["integer", "null"] }
         organizationId: { type: ["integer", "null"] }
+        preferredLanguage: { type: string, enum: [es, en, pt] }
+    UpdatePreferencesInput:
+      type: object
+      required: [preferredLanguage]
+      properties:
+        preferredLanguage: { type: string, enum: [es, en, pt] }
     Organization:
       type: object
       required: [id, name, type, country, status, createdAt]

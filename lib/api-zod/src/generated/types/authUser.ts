@@ -5,6 +5,7 @@
  * SEMBER CONNECT API
  * OpenAPI spec version: 0.1.0
  */
+import type { AuthUserPreferredLanguage } from './authUserPreferredLanguage';
 
 export interface AuthUser {
   id: number;
@@ -16,4 +17,5 @@ export interface AuthUser {
   professionalId?: number | null;
   /** @nullable */
   organizationId?: number | null;
+  preferredLanguage: AuthUserPreferredLanguage;
 }
