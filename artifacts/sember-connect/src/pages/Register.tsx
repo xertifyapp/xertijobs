@@ -15,29 +15,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { ORGANIZATION_TYPES } from "@/lib/constants";
+import { useDomainLabels } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useSearch } from "wouter";
 import { CheckCircle2, MailCheck, UserPlus, Building2, Clock } from "lucide-react";
-
-const postulanteSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Correo inválido"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
-});
-
-const empresaSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Correo inválido"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
-  orgName: z.string().min(2, "El nombre de la organización es requerido"),
-  orgType: z.string().min(1, "Selecciona el tipo de organización"),
-  orgCountry: z.string().min(2, "El país es requerido"),
-  orgCity: z.string().optional(),
-  orgWebsite: z.string().url("Debe ser una URL válida (ej. https://ejemplo.com)").optional().or(z.literal("")),
-  orgDescription: z.string().optional(),
-});
 
 type Step = "form" | "otp" | "success";
 
@@ -47,7 +30,27 @@ function getApiErrorMessage(err: unknown, fallback: string): string {
 }
 
 export default function Register() {
+  const { t } = useTranslation();
+  const { organizationTypes } = useDomainLabels();
   const { toast } = useToast();
+
+  const postulanteSchema = z.object({
+    name: z.string().min(2, t("auth.validation.nameMin")),
+    email: z.string().email(t("auth.validation.invalidEmail")),
+    password: z.string().min(8, t("auth.validation.passwordMin")),
+  });
+
+  const empresaSchema = z.object({
+    name: z.string().min(2, t("auth.validation.nameMin")),
+    email: z.string().email(t("auth.validation.invalidEmail")),
+    password: z.string().min(8, t("auth.validation.passwordMin")),
+    orgName: z.string().min(2, t("auth.validation.orgNameRequired")),
+    orgType: z.string().min(1, t("auth.validation.orgTypeRequired")),
+    orgCountry: z.string().min(2, t("auth.validation.orgCountryRequired")),
+    orgCity: z.string().optional(),
+    orgWebsite: z.string().url(t("auth.validation.orgWebsiteUrl")).optional().or(z.literal("")),
+    orgDescription: z.string().optional(),
+  });
   const [, navigate] = useLocation();
   const search = useSearch();
   const initialTab = new URLSearchParams(search).get("tipo") === "empresa" ? "empresa" : "postulante";
@@ -81,8 +84,8 @@ export default function Register() {
     window.scrollTo(0, 0);
     if (!emailSent) {
       toast({
-        title: "No pudimos enviar el correo",
-        description: "Usa el botón «Reenviar código» para intentarlo de nuevo.",
+        title: t("auth.register.toasts.emailNotSentTitle"),
+        description: t("auth.register.toasts.emailNotSentDesc"),
         variant: "destructive",
       });
     }
@@ -91,7 +94,7 @@ export default function Register() {
   function onRegisterError(err: unknown) {
     const status = (err as { status?: number }).status;
     toast({
-      title: status === 409 ? "Este correo ya está registrado" : getApiErrorMessage(err, "Error al crear la cuenta"),
+      title: status === 409 ? t("auth.register.toasts.emailExists") : getApiErrorMessage(err, t("auth.register.toasts.createError")),
       variant: "destructive",
     });
   }
@@ -142,7 +145,7 @@ export default function Register() {
         },
         onError: (err: unknown) => {
           setOtpCode("");
-          toast({ title: getApiErrorMessage(err, "Código inválido o expirado"), variant: "destructive" });
+          toast({ title: getApiErrorMessage(err, t("auth.register.toasts.invalidCode")), variant: "destructive" });
         },
       },
     );
@@ -152,9 +155,9 @@ export default function Register() {
     resendOtp.mutate(
       { data: { email: registeredEmail } },
       {
-        onSuccess: () => toast({ title: "Código reenviado", description: "Revisa tu bandeja de entrada." }),
+        onSuccess: () => toast({ title: t("auth.register.toasts.codeResent"), description: t("auth.register.toasts.codeResentDesc") }),
         onError: (err: unknown) =>
-          toast({ title: getApiErrorMessage(err, "No se pudo reenviar el código"), variant: "destructive" }),
+          toast({ title: getApiErrorMessage(err, t("auth.register.toasts.resendError")), variant: "destructive" }),
       },
     );
   };
@@ -168,9 +171,9 @@ export default function Register() {
               <div className="mx-auto inline-flex justify-center items-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
                 <MailCheck className="w-8 h-8" />
               </div>
-              <CardTitle className="text-2xl">Verifica tu correo</CardTitle>
+              <CardTitle className="text-2xl">{t("auth.register.otp.title")}</CardTitle>
               <CardDescription>
-                Enviamos un código de 6 dígitos a <strong>{registeredEmail}</strong>. Ingrésalo para verificar tu cuenta.
+                {t("auth.register.otp.descriptionBefore")}<strong>{registeredEmail}</strong>{t("auth.register.otp.descriptionAfter")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -184,17 +187,17 @@ export default function Register() {
                 </InputOTP>
               </div>
               <Button className="w-full" onClick={onVerify} disabled={otpCode.length !== 6 || verifyEmail.isPending}>
-                {verifyEmail.isPending ? "Verificando..." : "Verificar código"}
+                {verifyEmail.isPending ? t("auth.register.otp.verifying") : t("auth.register.otp.verify")}
               </Button>
               <div className="text-center text-sm text-muted-foreground">
-                ¿No recibiste el correo?{" "}
+                {t("auth.register.otp.noEmail")}{" "}
                 <button
                   type="button"
                   className="text-primary hover:underline disabled:opacity-50"
                   onClick={onResend}
                   disabled={resendOtp.isPending}
                 >
-                  {resendOtp.isPending ? "Enviando..." : "Reenviar código"}
+                  {resendOtp.isPending ? t("auth.register.otp.resending") : t("auth.register.otp.resend")}
                 </button>
               </div>
             </CardContent>
@@ -213,27 +216,27 @@ export default function Register() {
               <div className="inline-flex justify-center items-center w-24 h-24 rounded-full bg-green-100 text-green-600 mb-8">
                 <CheckCircle2 className="w-12 h-12" />
               </div>
-              <h1 className="text-4xl font-bold mb-4">¡Correo verificado!</h1>
+              <h1 className="text-4xl font-bold mb-4">{t("auth.register.success.applicantTitle")}</h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Tu cuenta está lista. Ya puedes iniciar sesión y comenzar a postular a oportunidades.
+                {t("auth.register.success.applicantMessage")}
               </p>
-              <Button size="lg" onClick={() => navigate("/login")}>Iniciar sesión</Button>
+              <Button size="lg" onClick={() => navigate("/login")}>{t("auth.register.success.loginButton")}</Button>
             </>
           ) : (
             <>
               <div className="inline-flex justify-center items-center w-24 h-24 rounded-full bg-yellow-100 text-yellow-600 mb-8">
                 <Clock className="w-12 h-12" />
               </div>
-              <h1 className="text-4xl font-bold mb-4">Correo verificado — Cuenta pendiente de aprobación</h1>
+              <h1 className="text-4xl font-bold mb-4">{t("auth.register.success.orgTitle")}</h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Tu correo fue verificado con éxito. Tu organización quedó en estado{" "}
-                <strong className="text-yellow-600">Pendiente</strong>.
+                {t("auth.register.success.orgMessageBefore")}
+                <strong className="text-yellow-600">{t("auth.register.success.orgStatusPending")}</strong>{t("auth.register.success.orgMessageAfter")}
               </p>
               <div className="bg-muted/50 p-6 rounded-lg text-left">
-                <p className="mb-4">El equipo de SEMBER revisará la información de la institución para validar su autenticidad.</p>
-                <p>Una vez aprobada, podrás iniciar sesión y acceder al <strong>Panel Institucional</strong> para publicar oportunidades y recibir postulaciones.</p>
+                <p className="mb-4">{t("auth.register.success.orgInfo1")}</p>
+                <p>{t("auth.register.success.orgInfo2Before")}<strong>{t("auth.register.success.orgInfo2Panel")}</strong>{t("auth.register.success.orgInfo2After")}</p>
               </div>
-              <Button className="mt-8" onClick={() => navigate("/")}>Volver al inicio</Button>
+              <Button className="mt-8" onClick={() => navigate("/")}>{t("auth.register.success.backHome")}</Button>
             </>
           )}
         </div>
@@ -245,54 +248,54 @@ export default function Register() {
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-3">Crear cuenta</h1>
+          <h1 className="text-4xl font-bold mb-3">{t("auth.register.title")}</h1>
           <p className="text-muted-foreground text-lg">
-            Únete a SEMBER CONNECT como profesional o como organización.
+            {t("auth.register.subtitle")}
           </p>
         </div>
 
         <Tabs defaultValue={initialTab}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="postulante">
-              <UserPlus className="w-4 h-4 mr-2" /> Postulante
+              <UserPlus className="w-4 h-4 mr-2" /> {t("auth.register.tabApplicant")}
             </TabsTrigger>
             <TabsTrigger value="empresa">
-              <Building2 className="w-4 h-4 mr-2" /> Organización
+              <Building2 className="w-4 h-4 mr-2" /> {t("auth.register.tabOrganization")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="postulante">
             <Card>
               <CardHeader>
-                <CardTitle>Registro de Postulante</CardTitle>
-                <CardDescription>Crea tu perfil profesional y postula a oportunidades.</CardDescription>
+                <CardTitle>{t("auth.register.applicant.title")}</CardTitle>
+                <CardDescription>{t("auth.register.applicant.description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...postulanteForm}>
                   <form onSubmit={postulanteForm.handleSubmit(onSubmitPostulante)} className="space-y-4">
                     <FormField control={postulanteForm.control} name="name" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre completo *</FormLabel>
-                        <FormControl><Input placeholder="Ej. Ana García" {...field} /></FormControl>
+                        <FormLabel>{t("auth.register.fields.fullName")}</FormLabel>
+                        <FormControl><Input placeholder={t("auth.register.fields.fullNamePlaceholder")} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={postulanteForm.control} name="email" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Correo electrónico *</FormLabel>
-                        <FormControl><Input type="email" placeholder="tu@correo.com" autoComplete="email" {...field} /></FormControl>
+                        <FormLabel>{t("auth.register.fields.email")}</FormLabel>
+                        <FormControl><Input type="email" placeholder={t("auth.register.fields.emailPlaceholder")} autoComplete="email" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={postulanteForm.control} name="password" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña *</FormLabel>
-                        <FormControl><Input type="password" placeholder="Mínimo 8 caracteres" autoComplete="new-password" {...field} /></FormControl>
+                        <FormLabel>{t("auth.register.fields.password")}</FormLabel>
+                        <FormControl><Input type="password" placeholder={t("auth.register.fields.passwordPlaceholder")} autoComplete="new-password" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <Button type="submit" className="w-full" disabled={register.isPending}>
-                      {register.isPending ? "Creando cuenta..." : "Crear cuenta"}
+                      {register.isPending ? t("auth.register.applicant.submitting") : t("auth.register.applicant.submit")}
                     </Button>
                   </form>
                 </Form>
@@ -303,9 +306,9 @@ export default function Register() {
           <TabsContent value="empresa">
             <Card>
               <CardHeader>
-                <CardTitle>Registro de Organización</CardTitle>
+                <CardTitle>{t("auth.register.organization.title")}</CardTitle>
                 <CardDescription>
-                  La cuenta quedará pendiente hasta que el equipo de SEMBER apruebe tu organización.
+                  {t("auth.register.organization.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -314,48 +317,48 @@ export default function Register() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={empresaForm.control} name="name" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre del responsable *</FormLabel>
-                          <FormControl><Input placeholder="Ej. Juan Pérez" {...field} /></FormControl>
+                          <FormLabel>{t("auth.register.organization.responsibleName")}</FormLabel>
+                          <FormControl><Input placeholder={t("auth.register.organization.responsibleNamePlaceholder")} {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={empresaForm.control} name="email" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Correo electrónico *</FormLabel>
-                          <FormControl><Input type="email" placeholder="contacto@institucion.edu" autoComplete="email" {...field} /></FormControl>
+                          <FormLabel>{t("auth.register.fields.email")}</FormLabel>
+                          <FormControl><Input type="email" placeholder={t("auth.register.organization.emailPlaceholder")} autoComplete="email" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                     </div>
                     <FormField control={empresaForm.control} name="password" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña *</FormLabel>
-                        <FormControl><Input type="password" placeholder="Mínimo 8 caracteres" autoComplete="new-password" {...field} /></FormControl>
+                        <FormLabel>{t("auth.register.fields.password")}</FormLabel>
+                        <FormControl><Input type="password" placeholder={t("auth.register.fields.passwordPlaceholder")} autoComplete="new-password" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
 
                     <div className="pt-4 border-t">
-                      <p className="text-sm font-medium mb-4 text-muted-foreground">Datos de la organización</p>
+                      <p className="text-sm font-medium mb-4 text-muted-foreground">{t("auth.register.organization.dataHeading")}</p>
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField control={empresaForm.control} name="orgName" render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Nombre de la Institución *</FormLabel>
-                              <FormControl><Input placeholder="Ej. Universidad Nacional" {...field} /></FormControl>
+                              <FormLabel>{t("auth.register.organization.orgName")}</FormLabel>
+                              <FormControl><Input placeholder={t("auth.register.organization.orgNamePlaceholder")} {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )} />
                           <FormField control={empresaForm.control} name="orgType" render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Tipo de Organización *</FormLabel>
+                              <FormLabel>{t("auth.register.organization.orgType")}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger><SelectValue placeholder="Seleccione un tipo" /></SelectTrigger>
+                                  <SelectTrigger><SelectValue placeholder={t("auth.register.organization.orgTypePlaceholder")} /></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {ORGANIZATION_TYPES.map((t) => (
-                                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                                  {organizationTypes.map((o) => (
+                                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -366,31 +369,31 @@ export default function Register() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField control={empresaForm.control} name="orgCountry" render={({ field }) => (
                             <FormItem>
-                              <FormLabel>País *</FormLabel>
-                              <FormControl><Input placeholder="Ej. México" {...field} /></FormControl>
+                              <FormLabel>{t("auth.register.organization.country")}</FormLabel>
+                              <FormControl><Input placeholder={t("auth.register.organization.countryPlaceholder")} {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )} />
                           <FormField control={empresaForm.control} name="orgCity" render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Ciudad</FormLabel>
-                              <FormControl><Input placeholder="Ej. Ciudad de México" {...field} /></FormControl>
+                              <FormLabel>{t("auth.register.organization.city")}</FormLabel>
+                              <FormControl><Input placeholder={t("auth.register.organization.cityPlaceholder")} {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )} />
                         </div>
                         <FormField control={empresaForm.control} name="orgWebsite" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Sitio Web</FormLabel>
-                            <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                            <FormLabel>{t("auth.register.organization.website")}</FormLabel>
+                            <FormControl><Input placeholder={t("auth.register.organization.websitePlaceholder")} {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
                         <FormField control={empresaForm.control} name="orgDescription" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Descripción de la Organización</FormLabel>
+                            <FormLabel>{t("auth.register.organization.descriptionLabel")}</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Breve descripción de la misión, visión y actividades..." rows={3} {...field} />
+                              <Textarea placeholder={t("auth.register.organization.descriptionPlaceholder")} rows={3} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -399,7 +402,7 @@ export default function Register() {
                     </div>
 
                     <Button type="submit" className="w-full" disabled={register.isPending}>
-                      {register.isPending ? "Enviando solicitud..." : "Crear cuenta y enviar solicitud"}
+                      {register.isPending ? t("auth.register.organization.submitting") : t("auth.register.organization.submit")}
                     </Button>
                   </form>
                 </Form>
@@ -409,8 +412,8 @@ export default function Register() {
         </Tabs>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-primary hover:underline">Inicia sesión</Link>
+          {t("auth.register.haveAccount")}{" "}
+          <Link href="/login" className="text-primary hover:underline">{t("auth.register.loginLink")}</Link>
         </p>
       </div>
     </MainLayout>

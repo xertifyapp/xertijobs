@@ -18,6 +18,7 @@ import {
   UpdateApplicationResponse,
 } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 
@@ -38,7 +39,7 @@ const applicationWithJoins = {
 router.get("/applications", requireAuth, async (req, res): Promise<void> => {
   const query = ListApplicationsQueryParams.safeParse(req.query);
   if (!query.success) {
-    res.status(400).json({ error: query.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -52,13 +53,13 @@ router.get("/applications", requireAuth, async (req, res): Promise<void> => {
   const sessionUser = req.session.user;
   if (sessionUser?.role === "postulante") {
     if (sessionUser.professionalId === null) {
-      res.status(403).json({ error: "Tu cuenta no tiene un perfil profesional asociado" });
+      res.status(403).json({ error: t(req.locale, "applications.noProfessionalProfile") });
       return;
     }
     conditions.push(eq(applicationsTable.professionalId, sessionUser.professionalId));
   } else if (sessionUser?.role === "empresa") {
     if (sessionUser.organizationId === null) {
-      res.status(403).json({ error: "Tu cuenta no tiene una organización asociada" });
+      res.status(403).json({ error: t(req.locale, "applications.noOrganization") });
       return;
     }
     conditions.push(eq(opportunitiesTable.organizationId, sessionUser.organizationId));
@@ -79,7 +80,7 @@ router.get("/applications", requireAuth, async (req, res): Promise<void> => {
 router.post("/applications", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateApplicationBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -88,7 +89,7 @@ router.post("/applications", requireRole("postulante", "admin"), async (req, res
     sessionUser?.role === "postulante" &&
     sessionUser.professionalId !== parsed.data.professionalId
   ) {
-    res.status(403).json({ error: "Solo puedes postular con tu propio perfil" });
+    res.status(403).json({ error: t(req.locale, "applications.onlyOwnProfile") });
     return;
   }
 
@@ -97,7 +98,7 @@ router.post("/applications", requireRole("postulante", "admin"), async (req, res
     .from(opportunitiesTable)
     .where(eq(opportunitiesTable.id, parsed.data.opportunityId));
   if (!opportunity) {
-    res.status(400).json({ error: "La oportunidad no existe" });
+    res.status(400).json({ error: t(req.locale, "common.opportunityNotExist") });
     return;
   }
 
@@ -106,7 +107,7 @@ router.post("/applications", requireRole("postulante", "admin"), async (req, res
     .from(professionalsTable)
     .where(eq(professionalsTable.id, parsed.data.professionalId));
   if (!professional) {
-    res.status(400).json({ error: "El profesional no existe" });
+    res.status(400).json({ error: t(req.locale, "common.professionalNotExist") });
     return;
   }
 
@@ -119,7 +120,7 @@ router.post("/applications", requireRole("postulante", "admin"), async (req, res
     .returning();
 
   if (!created) {
-    res.status(409).json({ error: "Ya has postulado a esta oportunidad" });
+    res.status(409).json({ error: t(req.locale, "applications.alreadyApplied") });
     return;
   }
 
@@ -137,13 +138,13 @@ router.post("/applications", requireRole("postulante", "admin"), async (req, res
 router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = UpdateApplicationParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
   const parsed = UpdateApplicationBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -155,7 +156,7 @@ router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, r
       .innerJoin(opportunitiesTable, eq(applicationsTable.opportunityId, opportunitiesTable.id))
       .where(eq(applicationsTable.id, params.data.id));
     if (existing && existing.organizationId !== sessionUser.organizationId) {
-      res.status(403).json({ error: "Solo puedes gestionar postulaciones de tu organización" });
+      res.status(403).json({ error: t(req.locale, "applications.onlyOwnOrgApplications") });
       return;
     }
   }
@@ -167,7 +168,7 @@ router.patch("/applications/:id", requireRole("empresa", "admin"), async (req, r
     .returning();
 
   if (!updated) {
-    res.status(404).json({ error: "Postulación no encontrada" });
+    res.status(404).json({ error: t(req.locale, "applications.notFound") });
     return;
   }
 

@@ -8,6 +8,8 @@ export type BodyType<T> = T;
 
 export type AuthTokenGetter = () => Promise<string | null> | string | null;
 
+export type LocaleGetter = () => string | null | undefined;
+
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
@@ -17,6 +19,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _localeGetter: LocaleGetter | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +45,19 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a getter that supplies the current UI locale (e.g. "es", "en",
+ * "pt"). Before every fetch the getter is invoked; when it returns a
+ * non-empty string and no `Accept-Language` header has been explicitly
+ * provided, an `Accept-Language: <locale>` header is attached to the request.
+ *
+ * Used so the API server can localize error messages and emails to match the
+ * user's selected language. Pass `null` to clear the getter.
+ */
+export function setLocaleGetter(getter: LocaleGetter | null): void {
+  _localeGetter = getter;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -347,6 +363,15 @@ export async function customFetch<T = unknown>(
 
   if (responseType === "json" && !headers.has("accept")) {
     headers.set("accept", DEFAULT_JSON_ACCEPT);
+  }
+
+  // Attach the current UI locale so the server can localize responses,
+  // unless an Accept-Language header has been explicitly provided.
+  if (_localeGetter && !headers.has("accept-language")) {
+    const locale = _localeGetter();
+    if (locale) {
+      headers.set("accept-language", locale);
+    }
   }
 
   // Attach bearer token when an auth getter is configured and no

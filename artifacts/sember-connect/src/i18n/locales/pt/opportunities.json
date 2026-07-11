@@ -1,0 +1,66 @@
+{
+  "opportunities": {
+    "common": {
+      "paid": "Remunerada"
+    },
+    "list": {
+      "title": "Explorar Oportunidades",
+      "searchPlaceholder": "Buscar por palavra-chave, cargo ou empresa...",
+      "typePlaceholder": "Tipo",
+      "allTypes": "Todos os tipos",
+      "modalityPlaceholder": "Modalidade",
+      "allModalities": "Todas as modalidades",
+      "loading": "Carregando oportunidades...",
+      "noResults": {
+        "title": "Nenhum resultado encontrado",
+        "description": "Tente ajustar os filtros de busca."
+      },
+      "resultsCount": "{{count}} oportunidades encontradas",
+      "publishedOn": "Publicado {{date}}",
+      "closesOn": "Encerra em {{date}}",
+      "viewOpportunity": "Ver Oportunidade",
+      "sidebar": {
+        "title": "Procura talento?",
+        "description": "Publique suas oportunidades e conecte-se com profissionais em toda a região.",
+        "cta": "Registrar Instituição"
+      }
+    },
+    "detail": {
+      "loading": "Carregando oportunidade...",
+      "notFound": "Oportunidade não encontrada.",
+      "closes": "Encerra: {{date}}",
+      "loginToApply": "Entre para se candidatar",
+      "apply": "Candidatar-me",
+      "applyDialog": {
+        "title": "Candidatar-se a {{title}}",
+        "description": "Confirme sua candidatura. Você pode adicionar uma mensagem opcional para a organização.",
+        "placeholder": "Mensagem opcional para o recrutador...",
+        "cancel": "Cancelar",
+        "sending": "Enviando...",
+        "confirm": "Confirmar Candidatura"
+      },
+      "saved": "Salva",
+      "save": "Salvar Oportunidade",
+      "description": "Descrição",
+      "requirements": "Requisitos",
+      "benefits": "Benefícios",
+      "competencies": "Competências Esperadas",
+      "requiredDocuments": "Documentos Exigidos",
+      "externalApplication": {
+        "title": "Candidatura Externa",
+        "description": "Esta oportunidade exige concluir a candidatura em um site externo.",
+        "cta": "Ir ao site externo"
+      },
+      "publishedOn": "Publicada em {{date}}",
+      "views": "{{count}} visualizações",
+      "toast": {
+        "removed": "Oportunidade removida dos salvos",
+        "saved": "Oportunidade salva com sucesso",
+        "applied": "Candidatura enviada com sucesso!",
+        "alreadyApplied": "Você já se candidatou a esta oportunidade",
+        "applyErrorTitle": "Erro ao candidatar-se",
+        "applyErrorDescription": "Ocorreu um erro inesperado"
+      }
+    }
+  }
+}

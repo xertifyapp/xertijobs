@@ -1,0 +1,81 @@
+{
+  "panel": {
+    "title": "Panel Institucional",
+    "selectOrgPlaceholder": "Seleccionar Organización",
+    "noOrgs": "No hay organizaciones aprobadas disponibles.",
+    "registerOrg": "Registrar una Organización",
+    "stats": {
+      "totalViews": "Vistas Totales",
+      "applications": "Postulaciones",
+      "activeOpps": "Opps Activas",
+      "publishedOpps": "Opps Publicadas"
+    },
+    "tabs": {
+      "applications": "Postulaciones Recibidas",
+      "opportunities": "Gestionar Oportunidades",
+      "profile": "Perfil de la Organización"
+    },
+    "applications": {
+      "title": "Postulaciones ({{count}})",
+      "empty": "Aún no hay postulaciones recibidas.",
+      "appliesTo": "Postula a:"
+    },
+    "opportunities": {
+      "title": "Oportunidades Publicadas",
+      "new": "Nueva Oportunidad",
+      "empty": "No has publicado oportunidades.",
+      "view": "Ver",
+      "close": "Cerrar",
+      "dialogTitle": "Publicar Nueva Oportunidad",
+      "fields": {
+        "title": "Título",
+        "titlePlaceholder": "Ej. Desarrollador Frontend",
+        "type": "Tipo",
+        "modality": "Modalidad",
+        "selectPlaceholder": "Seleccionar...",
+        "country": "País",
+        "countryPlaceholder": "Ej. Argentina",
+        "city": "Ciudad",
+        "cityPlaceholder": "Ej. Buenos Aires",
+        "area": "Área/Departamento",
+        "areaPlaceholder": "Ej. Tecnología",
+        "description": "Descripción",
+        "requirements": "Requisitos",
+        "paid": "Oportunidad Remunerada"
+      },
+      "publishing": "Publicando...",
+      "publish": "Publicar Oportunidad"
+    },
+    "profile": {
+      "title": "Perfil de la Organización",
+      "changeLogoTitle": "Cambiar logo",
+      "uploading": "Subiendo...",
+      "changeLogo": "Cambiar Logo",
+      "logoHint": "JPG, PNG o GIF. Máximo 10MB.",
+      "name": "Nombre de la Organización",
+      "website": "Sitio Web",
+      "websitePlaceholder": "https://tuorganizacion.com",
+      "description": "Descripción",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios"
+    },
+    "toast": {
+      "logoUpdated": "Logo actualizado",
+      "logoSaveError": "Error al guardar el logo",
+      "logoUploadError": "Error al subir el logo",
+      "orgUpdated": "Perfil de la organización actualizado",
+      "orgUpdateError": "Error al actualizar el perfil",
+      "appStatusUpdated": "Estado de postulación actualizado",
+      "oppClosed": "Oportunidad cerrada",
+      "oppPublished": "Oportunidad publicada exitosamente",
+      "oppPublishError": "Error al publicar"
+    },
+    "validation": {
+      "titleRequired": "Título requerido",
+      "typeRequired": "Tipo requerido",
+      "modalityRequired": "Modalidad requerida",
+      "countryRequired": "País requerido",
+      "nameRequired": "El nombre es requerido"
+    }
+  }
+}

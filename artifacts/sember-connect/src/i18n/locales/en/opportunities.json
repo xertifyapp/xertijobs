@@ -1,0 +1,66 @@
+{
+  "opportunities": {
+    "common": {
+      "paid": "Paid"
+    },
+    "list": {
+      "title": "Explore Opportunities",
+      "searchPlaceholder": "Search by keyword, role or company...",
+      "typePlaceholder": "Type",
+      "allTypes": "All types",
+      "modalityPlaceholder": "Modality",
+      "allModalities": "All modalities",
+      "loading": "Loading opportunities...",
+      "noResults": {
+        "title": "No results found",
+        "description": "Try adjusting your search filters."
+      },
+      "resultsCount": "{{count}} opportunities found",
+      "publishedOn": "Posted {{date}}",
+      "closesOn": "Closes on {{date}}",
+      "viewOpportunity": "View Opportunity",
+      "sidebar": {
+        "title": "Looking for talent?",
+        "description": "Post your opportunities and connect with professionals across the region.",
+        "cta": "Register Institution"
+      }
+    },
+    "detail": {
+      "loading": "Loading opportunity...",
+      "notFound": "Opportunity not found.",
+      "closes": "Closes: {{date}}",
+      "loginToApply": "Log in to apply",
+      "apply": "Apply",
+      "applyDialog": {
+        "title": "Apply to {{title}}",
+        "description": "Confirm your application. You can add an optional message for the organization.",
+        "placeholder": "Optional message for the recruiter...",
+        "cancel": "Cancel",
+        "sending": "Sending...",
+        "confirm": "Confirm Application"
+      },
+      "saved": "Saved",
+      "save": "Save Opportunity",
+      "description": "Description",
+      "requirements": "Requirements",
+      "benefits": "Benefits",
+      "competencies": "Expected Competencies",
+      "requiredDocuments": "Required Documents",
+      "externalApplication": {
+        "title": "External Application",
+        "description": "This opportunity requires completing the application on an external site.",
+        "cta": "Go to external site"
+      },
+      "publishedOn": "Published on {{date}}",
+      "views": "{{count}} views",
+      "toast": {
+        "removed": "Opportunity removed from saved",
+        "saved": "Opportunity saved successfully",
+        "applied": "Application sent successfully!",
+        "alreadyApplied": "You have already applied to this opportunity",
+        "applyErrorTitle": "Error applying",
+        "applyErrorDescription": "An unexpected error occurred"
+      }
+    }
+  }
+}

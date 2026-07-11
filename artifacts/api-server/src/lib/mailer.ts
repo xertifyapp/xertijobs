@@ -1,6 +1,7 @@
 // Uses the Replit Gmail integration (connection: google-mail) to send emails.
 import { ReplitConnectors } from "@replit/connectors-sdk";
 import { logger } from "./logger";
+import { t, type Locale, DEFAULT_LOCALE } from "./i18n";
 
 const connectors = new ReplitConnectors();
 
@@ -34,15 +35,20 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
   }
 }
 
-export async function sendOtpEmail(to: string, name: string, code: string): Promise<void> {
+export async function sendOtpEmail(
+  to: string,
+  name: string,
+  code: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<void> {
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
     <h2 style="color: #1a1a2e;">SEMBER CONNECT</h2>
-    <p>Hola ${name},</p>
-    <p>Tu código de verificación es:</p>
+    <p>${t(locale, "email.otp.greeting", { name })}</p>
+    <p>${t(locale, "email.otp.instruction")}</p>
     <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; background: #f4f4f8; padding: 16px; border-radius: 8px;">${code}</p>
-    <p>Este código expira en 10 minutos.</p>
-    <p style="color: #888; font-size: 12px;">Si no solicitaste este código, puedes ignorar este correo.</p>
+    <p>${t(locale, "email.otp.expiry")}</p>
+    <p style="color: #888; font-size: 12px;">${t(locale, "email.otp.ignore")}</p>
   </div>`;
-  await sendEmail(to, "Tu código de verificación — SEMBER CONNECT", html);
+  await sendEmail(to, t(locale, "email.otp.subject"), html);
 }

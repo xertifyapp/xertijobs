@@ -1,0 +1,35 @@
+{
+  "admin": {
+    "title": "Painel de Administração SEMBER",
+    "subtitle": "Visão global do ecossistema",
+    "loadingMetrics": "Carregando métricas...",
+    "stats": {
+      "organizations": "Instituições",
+      "opportunities": "Oportunidades",
+      "applications": "Candidaturas",
+      "countries": "Países",
+      "pending": "Pendentes"
+    },
+    "tabs": {
+      "pending": "Aprovações Pendentes",
+      "all": "Todas as Organizações"
+    },
+    "pending": {
+      "cardTitle": "Solicitações de Ingresso ({{count}})",
+      "empty": "Não há solicitações pendentes.",
+      "approve": "Aprovar",
+      "reject": "Rejeitar"
+    },
+    "all": {
+      "approve": "Aprovar"
+    },
+    "activity": {
+      "title": "Atividade Recente",
+      "empty": "Não há atividade recente."
+    },
+    "toast": {
+      "approved": "Organização aprovada",
+      "rejected": "Organização rejeitada"
+    }
+  }
+}

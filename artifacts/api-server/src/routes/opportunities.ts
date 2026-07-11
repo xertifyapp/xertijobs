@@ -15,6 +15,7 @@ import {
   DeleteOpportunityParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 
@@ -46,7 +47,7 @@ const opportunityWithOrg = {
 router.get("/opportunities", async (req, res): Promise<void> => {
   const query = ListOpportunitiesQueryParams.safeParse(req.query);
   if (!query.success) {
-    res.status(400).json({ error: query.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -85,7 +86,7 @@ router.get("/opportunities", async (req, res): Promise<void> => {
 router.post("/opportunities", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateOpportunityBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -94,7 +95,7 @@ router.post("/opportunities", requireRole("empresa", "admin"), async (req, res):
     sessionUser?.role === "empresa" &&
     sessionUser.organizationId !== parsed.data.organizationId
   ) {
-    res.status(403).json({ error: "Solo puedes publicar oportunidades de tu organización" });
+    res.status(403).json({ error: t(req.locale, "opportunities.onlyPublishOwnOrg") });
     return;
   }
 
@@ -104,7 +105,7 @@ router.post("/opportunities", requireRole("empresa", "admin"), async (req, res):
     .where(eq(organizationsTable.id, parsed.data.organizationId));
 
   if (!org) {
-    res.status(400).json({ error: "Organización no encontrada" });
+    res.status(400).json({ error: t(req.locale, "organizations.notFound") });
     return;
   }
 
@@ -114,7 +115,7 @@ router.post("/opportunities", requireRole("empresa", "admin"), async (req, res):
     .returning();
 
   if (!opp) {
-    res.status(500).json({ error: "No se pudo crear la oportunidad" });
+    res.status(500).json({ error: t(req.locale, "opportunities.createFailed") });
     return;
   }
 
@@ -132,7 +133,7 @@ router.post("/opportunities", requireRole("empresa", "admin"), async (req, res):
 router.get("/opportunities/:id", async (req, res): Promise<void> => {
   const params = GetOpportunityParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -148,7 +149,7 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
     .where(eq(opportunitiesTable.id, params.data.id));
 
   if (!opp) {
-    res.status(404).json({ error: "Oportunidad no encontrada" });
+    res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
     return;
   }
 
@@ -158,13 +159,13 @@ router.get("/opportunities/:id", async (req, res): Promise<void> => {
 router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = UpdateOpportunityParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
   const parsed = UpdateOpportunityBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -175,7 +176,7 @@ router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, 
       .from(opportunitiesTable)
       .where(eq(opportunitiesTable.id, params.data.id));
     if (existing && existing.organizationId !== sessionUser.organizationId) {
-      res.status(403).json({ error: "Solo puedes modificar oportunidades de tu organización" });
+      res.status(403).json({ error: t(req.locale, "opportunities.onlyModifyOwnOrg") });
       return;
     }
   }
@@ -187,7 +188,7 @@ router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, 
     .returning();
 
   if (!updated) {
-    res.status(404).json({ error: "Oportunidad no encontrada" });
+    res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
     return;
   }
 
@@ -203,7 +204,7 @@ router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, 
 router.delete("/opportunities/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = DeleteOpportunityParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -214,7 +215,7 @@ router.delete("/opportunities/:id", requireRole("empresa", "admin"), async (req,
       .from(opportunitiesTable)
       .where(eq(opportunitiesTable.id, params.data.id));
     if (existing && existing.organizationId !== sessionUser.organizationId) {
-      res.status(403).json({ error: "Solo puedes eliminar oportunidades de tu organización" });
+      res.status(403).json({ error: t(req.locale, "opportunities.onlyDeleteOwnOrg") });
       return;
     }
   }
@@ -225,7 +226,7 @@ router.delete("/opportunities/:id", requireRole("empresa", "admin"), async (req,
     .returning();
 
   if (!opp) {
-    res.status(404).json({ error: "Oportunidad no encontrada" });
+    res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
     return;
   }
 

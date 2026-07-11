@@ -3,7 +3,7 @@ import { useGetOpportunity, useListSavedOpportunities, useSaveOpportunity, useUn
 import { useParams, Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { OPPORTUNITY_TYPES, STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, Globe, Briefcase, Calendar, FileText, CheckCircle2, BookmarkIcon, ExternalLink } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,8 +11,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 export default function OpportunityDetail() {
+  const { t } = useTranslation();
+  const { opportunityTypeLabel, modalityLabel, opportunityStatusLabel } = useDomainLabels();
   const { id } = useParams();
   const oppId = parseInt(id || "0", 10);
   const queryClient = useQueryClient();
@@ -42,14 +45,14 @@ export default function OpportunityDetail() {
       unsaveOpp.mutate({ id: professionalId, opportunityId: oppId }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(professionalId) });
-          toast({ title: "Oportunidad eliminada de guardados" });
+          toast({ title: t("opportunities.detail.toast.removed") });
         }
       });
     } else {
       saveOpp.mutate({ id: professionalId, data: { opportunityId: oppId } }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListSavedOpportunitiesQueryKey(professionalId) });
-          toast({ title: "Oportunidad guardada con éxito" });
+          toast({ title: t("opportunities.detail.toast.saved") });
         }
       });
     }
@@ -58,22 +61,22 @@ export default function OpportunityDetail() {
   const handleApply = () => {
     apply.mutate({ data: { opportunityId: oppId, professionalId, message: applyMessage } }, {
       onSuccess: () => {
-        toast({ title: "¡Postulación enviada exitosamente!" });
+        toast({ title: t("opportunities.detail.toast.applied") });
         setIsApplyOpen(false);
         setApplyMessage("");
       },
       onError: (err: any) => {
         if (err.status === 409) {
-          toast({ title: "Ya te has postulado a esta oportunidad", variant: "destructive" });
+          toast({ title: t("opportunities.detail.toast.alreadyApplied"), variant: "destructive" });
         } else {
-          toast({ title: "Error al postular", description: "Ocurrió un error inesperado", variant: "destructive" });
+          toast({ title: t("opportunities.detail.toast.applyErrorTitle"), description: t("opportunities.detail.toast.applyErrorDescription"), variant: "destructive" });
         }
       }
     });
   };
 
-  if (isLoading) return <MainLayout><div className="py-20 text-center text-muted-foreground">Cargando oportunidad...</div></MainLayout>;
-  if (!opp) return <MainLayout><div className="py-20 text-center text-muted-foreground">Oportunidad no encontrada.</div></MainLayout>;
+  if (isLoading) return <MainLayout><div className="py-20 text-center text-muted-foreground">{t("opportunities.detail.loading")}</div></MainLayout>;
+  if (!opp) return <MainLayout><div className="py-20 text-center text-muted-foreground">{t("opportunities.detail.notFound")}</div></MainLayout>;
 
   return (
     <MainLayout>
@@ -82,10 +85,10 @@ export default function OpportunityDetail() {
           <div className="flex flex-col md:flex-row justify-between gap-6 items-start">
             <div className="flex-1">
               <div className="flex gap-2 mb-4 flex-wrap">
-                <Badge className={STATUS_COLORS[opp.status] || ""}>{opp.status}</Badge>
-                <Badge className="bg-primary/10 text-primary">{OPPORTUNITY_TYPES.find(t => t.value === opp.type)?.label || opp.type}</Badge>
-                {opp.paid && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Remunerada</Badge>}
-                <Badge variant="outline" className="capitalize">{opp.modality}</Badge>
+                <Badge className={STATUS_COLORS[opp.status] || ""}>{opportunityStatusLabel(opp.status)}</Badge>
+                <Badge className="bg-primary/10 text-primary">{opportunityTypeLabel(opp.type)}</Badge>
+                {opp.paid && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">{t("opportunities.common.paid")}</Badge>}
+                <Badge variant="outline">{modalityLabel(opp.modality)}</Badge>
               </div>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-4">{opp.title}</h1>
@@ -107,7 +110,7 @@ export default function OpportunityDetail() {
                 {opp.deadline && (
                   <div className="flex items-center gap-2 text-destructive font-medium">
                     <Calendar className="h-5 w-5" />
-                    Cierra: {new Date(opp.deadline).toLocaleDateString('es-ES')}
+                    {t("opportunities.detail.closes", { date: new Date(opp.deadline).toLocaleDateString('es-ES') })}
                   </div>
                 )}
               </div>
@@ -116,34 +119,34 @@ export default function OpportunityDetail() {
             <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto">
               {!user ? (
                 <Button size="lg" className="w-full md:w-64" onClick={() => navigate("/login")} disabled={opp.status !== 'activa'}>
-                  Inicia sesión para postular
+                  {t("opportunities.detail.loginToApply")}
                 </Button>
               ) : isPostulante ? (
               <Dialog open={isApplyOpen} onOpenChange={setIsApplyOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="w-full md:w-64" disabled={opp.status !== 'activa' || apply.isPending}>
-                    Postularme
+                    {t("opportunities.detail.apply")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Postular a {opp.title}</DialogTitle>
+                    <DialogTitle>{t("opportunities.detail.applyDialog.title", { title: opp.title })}</DialogTitle>
                     <DialogDescription>
-                      Confirma tu postulación. Puedes agregar un mensaje opcional para la organización.
+                      {t("opportunities.detail.applyDialog.description")}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4">
                     <Textarea 
-                      placeholder="Mensaje opcional para el reclutador..." 
+                      placeholder={t("opportunities.detail.applyDialog.placeholder")} 
                       value={applyMessage}
                       onChange={(e) => setApplyMessage(e.target.value)}
                       rows={4}
                     />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsApplyOpen(false)}>Cancelar</Button>
+                    <Button variant="outline" onClick={() => setIsApplyOpen(false)}>{t("opportunities.detail.applyDialog.cancel")}</Button>
                     <Button onClick={handleApply} disabled={apply.isPending}>
-                      {apply.isPending ? "Enviando..." : "Confirmar Postulación"}
+                      {apply.isPending ? t("opportunities.detail.applyDialog.sending") : t("opportunities.detail.applyDialog.confirm")}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -158,7 +161,7 @@ export default function OpportunityDetail() {
                   onClick={handleSaveToggle}
                 >
                   <BookmarkIcon className={`mr-2 h-5 w-5 ${isSaved ? "fill-primary text-primary" : ""}`} />
-                  {isSaved ? "Guardada" : "Guardar Oportunidad"}
+                  {isSaved ? t("opportunities.detail.saved") : t("opportunities.detail.save")}
                 </Button>
               )}
             </div>
@@ -171,7 +174,7 @@ export default function OpportunityDetail() {
           <div className="lg:col-span-2 space-y-12">
             {opp.description && (
               <section>
-                <h2 className="text-2xl font-bold mb-4">Descripción</h2>
+                <h2 className="text-2xl font-bold mb-4">{t("opportunities.detail.description")}</h2>
                 <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground whitespace-pre-wrap">
                   {opp.description}
                 </div>
@@ -180,7 +183,7 @@ export default function OpportunityDetail() {
 
             {opp.requirements && (
               <section>
-                <h2 className="text-2xl font-bold mb-4">Requisitos</h2>
+                <h2 className="text-2xl font-bold mb-4">{t("opportunities.detail.requirements")}</h2>
                 <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground whitespace-pre-wrap">
                   {opp.requirements}
                 </div>
@@ -189,7 +192,7 @@ export default function OpportunityDetail() {
 
             {opp.benefits && (
               <section>
-                <h2 className="text-2xl font-bold mb-4">Beneficios</h2>
+                <h2 className="text-2xl font-bold mb-4">{t("opportunities.detail.benefits")}</h2>
                 <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground whitespace-pre-wrap">
                   {opp.benefits}
                 </div>
@@ -200,7 +203,7 @@ export default function OpportunityDetail() {
           <div className="space-y-8">
             {(opp.competencies && opp.competencies.length > 0) && (
               <div className="bg-muted/30 p-6 rounded-xl border">
-                <h3 className="font-bold text-lg mb-4">Competencias Esperadas</h3>
+                <h3 className="font-bold text-lg mb-4">{t("opportunities.detail.competencies")}</h3>
                 <div className="flex flex-wrap gap-2">
                   {opp.competencies.map((comp, i) => (
                     <Badge key={i} variant="secondary">{comp}</Badge>
@@ -212,7 +215,7 @@ export default function OpportunityDetail() {
             {(opp.requiredDocuments && opp.requiredDocuments.length > 0) && (
               <div className="bg-muted/30 p-6 rounded-xl border">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5" /> Documentos Requeridos
+                  <FileText className="h-5 w-5" /> {t("opportunities.detail.requiredDocuments")}
                 </h3>
                 <ul className="space-y-3">
                   {opp.requiredDocuments.map((doc, i) => (
@@ -226,19 +229,19 @@ export default function OpportunityDetail() {
 
             {opp.externalLink && (
               <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
-                <h3 className="font-bold text-lg mb-2">Postulación Externa</h3>
-                <p className="text-sm text-muted-foreground mb-4">Esta oportunidad requiere completar la postulación en un sitio externo.</p>
+                <h3 className="font-bold text-lg mb-2">{t("opportunities.detail.externalApplication.title")}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{t("opportunities.detail.externalApplication.description")}</p>
                 <a href={opp.externalLink} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full" variant="outline">
-                    Ir al sitio externo <ExternalLink className="ml-2 h-4 w-4" />
+                    {t("opportunities.detail.externalApplication.cta")} <ExternalLink className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
               </div>
             )}
             
             <div className="text-sm text-muted-foreground text-center">
-              Publicada el {new Date(opp.createdAt).toLocaleDateString('es-ES')}
-              {opp.views ? ` · ${opp.views} vistas` : ''}
+              {t("opportunities.detail.publishedOn", { date: new Date(opp.createdAt).toLocaleDateString('es-ES') })}
+              {opp.views ? ` · ${t("opportunities.detail.views", { count: opp.views })}` : ''}
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ import {
   GetRecentActivityResponse,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 
@@ -83,13 +84,13 @@ router.get("/stats/global", requireRole("admin"), async (_req, res): Promise<voi
 router.get("/stats/organizations/:id", requireRole("empresa", "admin"), async (req, res): Promise<void> => {
   const params = GetOrganizationStatsParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
   const sessionUser = req.session.user;
   if (sessionUser?.role === "empresa" && sessionUser.organizationId !== params.data.id) {
-    res.status(403).json({ error: "Solo puedes ver estadísticas de tu organización" });
+    res.status(403).json({ error: t(req.locale, "stats.onlyOwnOrgStats") });
     return;
   }
 
@@ -138,7 +139,7 @@ router.get("/stats/organizations/:id", requireRole("empresa", "admin"), async (r
   );
 });
 
-router.get("/activity/recent", requireRole("admin"), async (_req, res): Promise<void> => {
+router.get("/activity/recent", requireRole("admin"), async (req, res): Promise<void> => {
   const recentOpportunities = await db
     .select({
       id: opportunitiesTable.id,
@@ -176,10 +177,10 @@ router.get("/activity/recent", requireRole("admin"), async (_req, res): Promise<
     .limit(10);
 
   const items = [
-    ...recentOpportunities.map((o, i) => ({
+    ...recentOpportunities.map((o) => ({
       id: o.id * 10 + 1,
       kind: "opportunity_published",
-      title: `Nueva oportunidad: ${o.title}`,
+      title: t(req.locale, "activity.newOpportunity", { title: o.title }),
       subtitle: o.orgName,
       createdAt: o.createdAt,
       _sort: o.createdAt.getTime(),
@@ -187,7 +188,7 @@ router.get("/activity/recent", requireRole("admin"), async (_req, res): Promise<
     ...recentApplications.map((a) => ({
       id: a.id * 10 + 2,
       kind: "application_received",
-      title: `${a.proName} postuló`,
+      title: t(req.locale, "activity.applicationReceived", { name: a.proName }),
       subtitle: a.oppTitle,
       createdAt: a.createdAt,
       _sort: a.createdAt.getTime(),
@@ -197,8 +198,8 @@ router.get("/activity/recent", requireRole("admin"), async (_req, res): Promise<
       kind: o.status === "aprobada" ? "organization_approved" : "organization_registered",
       title:
         o.status === "aprobada"
-          ? `Organización aprobada: ${o.name}`
-          : `Nueva organización registrada: ${o.name}`,
+          ? t(req.locale, "activity.orgApproved", { name: o.name })
+          : t(req.locale, "activity.orgRegistered", { name: o.name }),
       subtitle: null,
       createdAt: o.createdAt,
       _sort: o.createdAt.getTime(),

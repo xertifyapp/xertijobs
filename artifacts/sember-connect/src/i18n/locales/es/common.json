@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "brandSuffix": "CONNECT",
+    "opportunities": "Oportunidades",
+    "organizations": "Organizaciones",
+    "myProfile": "Mi Perfil",
+    "panel": "Panel Institucional",
+    "admin": "Admin",
+    "createAccount": "Crear Cuenta",
+    "login": "Iniciar Sesión",
+    "logout": "Salir",
+    "language": "Idioma"
+  },
+  "footer": {
+    "tagline": "Conectando talento con oportunidades en todo el mundo.",
+    "explore": "Explorar",
+    "searchOpportunities": "Buscar Oportunidades",
+    "institutionsDirectory": "Directorio de Instituciones",
+    "institutions": "Instituciones",
+    "registerOrganization": "Registrar Organización",
+    "controlPanel": "Panel de Control",
+    "legal": "Legal",
+    "terms": "Términos de Uso",
+    "privacy": "Privacidad",
+    "rights": "© {{year}} SEMBER CONNECT. Todos los derechos reservados.",
+    "poweredBy": "Powered By"
+  },
+  "actions": {
+    "save": "Guardar",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "viewOpportunity": "Ver Oportunidad",
+    "exploreOpportunities": "Explorar Oportunidades",
+    "backToHome": "Volver al inicio",
+    "visitWebsite": "Visitar sitio web"
+  },
+  "notFound": {
+    "title": "404 Página no encontrada",
+    "description": "¿Olvidaste agregar la página al enrutador?"
+  },
+  "enums": {
+    "opportunityType": {
+      "internship": "Pasantía",
+      "empleo": "Empleo",
+      "beca": "Beca",
+      "bootcamp": "Bootcamp",
+      "evento": "Evento",
+      "movilidad": "Movilidad Académica",
+      "convocatoria": "Convocatoria"
+    },
+    "organizationType": {
+      "universidad": "Universidad",
+      "empresa": "Empresa",
+      "gobierno": "Gobierno",
+      "ong": "ONG",
+      "fundacion": "Fundación",
+      "organismo_internacional": "Organismo Internacional"
+    },
+    "modality": {
+      "presencial": "Presencial",
+      "remoto": "Remoto",
+      "hibrido": "Híbrido"
+    },
+    "applicationStatus": {
+      "enviada": "Enviada",
+      "en_revision": "En Revisión",
+      "preseleccionado": "Preseleccionado",
+      "aceptado": "Aceptado",
+      "rechazado": "Rechazado"
+    },
+    "opportunityStatus": {
+      "activa": "Activa",
+      "cerrada": "Cerrada",
+      "borrador": "Borrador"
+    },
+    "organizationStatus": {
+      "pendiente": "Pendiente",
+      "aprobada": "Aprobada",
+      "rechazada": "Rechazada"
+    }
+  }
+}

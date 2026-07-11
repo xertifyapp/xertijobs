@@ -1,27 +1,67 @@
-export const OPPORTUNITY_TYPES = [
-  { value: "internship", label: "Pasantía" },
-  { value: "empleo", label: "Empleo" },
-  { value: "beca", label: "Beca" },
-  { value: "bootcamp", label: "Bootcamp" },
-  { value: "evento", label: "Evento" },
-  { value: "movilidad", label: "Movilidad Académica" },
-  { value: "convocatoria", label: "Convocatoria" },
-];
+import { useTranslation } from "react-i18next";
 
-export const ORGANIZATION_TYPES = [
-  { value: "universidad", label: "Universidad" },
-  { value: "empresa", label: "Empresa" },
-  { value: "gobierno", label: "Gobierno" },
-  { value: "ong", label: "ONG" },
-  { value: "fundacion", label: "Fundación" },
-  { value: "organismo_internacional", label: "Organismo Internacional" },
-];
+export const OPPORTUNITY_TYPE_VALUES = [
+  "internship",
+  "empleo",
+  "beca",
+  "bootcamp",
+  "evento",
+  "movilidad",
+  "convocatoria",
+] as const;
 
-export const MODALITIES = [
-  { value: "presencial", label: "Presencial" },
-  { value: "remoto", label: "Remoto" },
-  { value: "hibrido", label: "Híbrido" },
-];
+export const ORGANIZATION_TYPE_VALUES = [
+  "universidad",
+  "empresa",
+  "gobierno",
+  "ong",
+  "fundacion",
+  "organismo_internacional",
+] as const;
+
+export const MODALITY_VALUES = ["presencial", "remoto", "hibrido"] as const;
+
+export type DomainOption = { value: string; label: string };
+
+/**
+ * Localized label helpers for the domain enums. The stored DB values never
+ * change; only their display labels are translated via the `enums.*` keys.
+ */
+export function useDomainLabels() {
+  const { t } = useTranslation();
+
+  const opportunityTypes: DomainOption[] = OPPORTUNITY_TYPE_VALUES.map((value) => ({
+    value,
+    label: t(`enums.opportunityType.${value}`),
+  }));
+
+  const organizationTypes: DomainOption[] = ORGANIZATION_TYPE_VALUES.map((value) => ({
+    value,
+    label: t(`enums.organizationType.${value}`),
+  }));
+
+  const modalities: DomainOption[] = MODALITY_VALUES.map((value) => ({
+    value,
+    label: t(`enums.modality.${value}`),
+  }));
+
+  return {
+    opportunityTypes,
+    organizationTypes,
+    modalities,
+    opportunityTypeLabel: (value?: string | null) =>
+      value ? t(`enums.opportunityType.${value}`) : "",
+    organizationTypeLabel: (value?: string | null) =>
+      value ? t(`enums.organizationType.${value}`) : "",
+    modalityLabel: (value?: string | null) => (value ? t(`enums.modality.${value}`) : ""),
+    applicationStatusLabel: (value?: string | null) =>
+      value ? t(`enums.applicationStatus.${value}`) : "",
+    opportunityStatusLabel: (value?: string | null) =>
+      value ? t(`enums.opportunityStatus.${value}`) : "",
+    organizationStatusLabel: (value?: string | null) =>
+      value ? t(`enums.organizationStatus.${value}`) : "",
+  };
+}
 
 export const STATUS_COLORS: Record<string, string> = {
   activa: "bg-green-100 text-green-800 border-green-200",

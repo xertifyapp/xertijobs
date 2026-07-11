@@ -27,6 +27,7 @@ import {
   UnsaveOpportunityParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 import type { Request, Response } from "express";
 
 const router: IRouter = Router();
@@ -34,7 +35,7 @@ const router: IRouter = Router();
 function canManageProfessional(req: Request, res: Response, professionalId: number): boolean {
   const sessionUser = req.session.user;
   if (sessionUser?.role === "postulante" && sessionUser.professionalId !== professionalId) {
-    res.status(403).json({ error: "Solo puedes gestionar tu propio perfil" });
+    res.status(403).json({ error: t(req.locale, "professionals.onlyOwnProfile") });
     return false;
   }
   return true;
@@ -43,7 +44,7 @@ function canManageProfessional(req: Request, res: Response, professionalId: numb
 router.get("/professionals", async (req, res): Promise<void> => {
   const query = ListProfessionalsQueryParams.safeParse(req.query);
   if (!query.success) {
-    res.status(400).json({ error: query.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -71,7 +72,7 @@ router.get("/professionals", async (req, res): Promise<void> => {
 router.post("/professionals", async (req, res): Promise<void> => {
   const parsed = CreateProfessionalBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -83,7 +84,7 @@ router.post("/professionals", async (req, res): Promise<void> => {
 router.get("/professionals/:id", async (req, res): Promise<void> => {
   const params = GetProfessionalParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -93,7 +94,7 @@ router.get("/professionals/:id", async (req, res): Promise<void> => {
     .where(eq(professionalsTable.id, params.data.id));
 
   if (!pro) {
-    res.status(404).json({ error: "Profesional no encontrado" });
+    res.status(404).json({ error: t(req.locale, "professionals.notFound") });
     return;
   }
 
@@ -103,14 +104,14 @@ router.get("/professionals/:id", async (req, res): Promise<void> => {
 router.patch("/professionals/:id", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = UpdateProfessionalParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
   if (!canManageProfessional(req, res, params.data.id)) return;
 
   const parsed = UpdateProfessionalBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -121,7 +122,7 @@ router.patch("/professionals/:id", requireRole("postulante", "admin"), async (re
     .returning();
 
   if (!pro) {
-    res.status(404).json({ error: "Profesional no encontrado" });
+    res.status(404).json({ error: t(req.locale, "professionals.notFound") });
     return;
   }
 
@@ -131,7 +132,7 @@ router.patch("/professionals/:id", requireRole("postulante", "admin"), async (re
 router.get("/professionals/:id/saved", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = ListSavedOpportunitiesParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
   if (!canManageProfessional(req, res, params.data.id)) return;
@@ -173,14 +174,14 @@ router.get("/professionals/:id/saved", requireRole("postulante", "admin"), async
 router.post("/professionals/:id/saved", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = SaveOpportunityParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
   if (!canManageProfessional(req, res, params.data.id)) return;
 
   const parsed = SaveOpportunityBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -189,7 +190,7 @@ router.post("/professionals/:id/saved", requireRole("postulante", "admin"), asyn
     .from(professionalsTable)
     .where(eq(professionalsTable.id, params.data.id));
   if (!professional) {
-    res.status(400).json({ error: "El profesional no existe" });
+    res.status(400).json({ error: t(req.locale, "common.professionalNotExist") });
     return;
   }
 
@@ -198,7 +199,7 @@ router.post("/professionals/:id/saved", requireRole("postulante", "admin"), asyn
     .from(opportunitiesTable)
     .where(eq(opportunitiesTable.id, parsed.data.opportunityId));
   if (!opportunity) {
-    res.status(400).json({ error: "La oportunidad no existe" });
+    res.status(400).json({ error: t(req.locale, "common.opportunityNotExist") });
     return;
   }
 
@@ -231,7 +232,7 @@ router.post("/professionals/:id/saved", requireRole("postulante", "admin"), asyn
 router.delete("/professionals/:id/saved/:opportunityId", requireRole("postulante", "admin"), async (req, res): Promise<void> => {
   const params = UnsaveOpportunityParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
   if (!canManageProfessional(req, res, params.data.id)) return;

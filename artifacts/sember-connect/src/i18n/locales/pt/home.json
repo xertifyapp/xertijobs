@@ -1,0 +1,34 @@
+{
+  "home": {
+    "hero": {
+      "badge": "Ecossistema Global de Talento",
+      "title": "O ecossistema onde o talento, a educação e a internacionalização se conectam",
+      "subtitle": "Universidades, empresas e organismos internacionais criam oportunidades que transformam vidas e comunidades.",
+      "exploreCta": "Explorar Oportunidades",
+      "institutionCta": "Sou uma Instituição"
+    },
+    "modules": {
+      "title": "Módulos do Ecossistema",
+      "subtitle": "Encontre exatamente o que procura em nossas categorias especializadas.",
+      "empleabilidad": "Empregabilidade",
+      "becas": "Bolsas",
+      "pasantias": "Estágios",
+      "movilidad": "Mobilidade",
+      "bootcamps": "Bootcamps",
+      "eventos": "Eventos"
+    },
+    "featured": {
+      "title": "Oportunidades em Destaque",
+      "subtitle": "As últimas publicações no ecossistema.",
+      "viewAll": "Ver todas",
+      "paid": "Remunerada",
+      "viewDetails": "Ver Detalhes",
+      "viewAllMobile": "Ver todas as oportunidades"
+    },
+    "cta": {
+      "title": "Impulsione sua carreira internacional",
+      "subtitle": "Junte-se a milhares de profissionais e estudantes que já estão se conectando com as melhores instituições.",
+      "button": "Começar agora"
+    }
+  }
+}

@@ -11,12 +11,8 @@ import { z } from "zod";
 import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { LogIn } from "lucide-react";
-
-const loginSchema = z.object({
-  email: z.string().email("Correo inválido"),
-  password: z.string().min(1, "La contraseña es requerida"),
-});
 
 function homeForRole(role: string): string {
   switch (role) {
@@ -30,11 +26,17 @@ function homeForRole(role: string): string {
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const { user, isLoading } = useAuth();
   const login = useLogin();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+
+  const loginSchema = z.object({
+    email: z.string().email(t("auth.validation.invalidEmail")),
+    password: z.string().min(1, t("auth.validation.passwordRequired")),
+  });
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -49,21 +51,21 @@ export default function Login() {
     login.mutate({ data: values }, {
       onSuccess: (authUser: AuthUser) => {
         queryClient.setQueryData(getGetCurrentUserQueryKey(), authUser);
-        toast({ title: `Bienvenido/a, ${authUser.name}` });
+        toast({ title: t("auth.login.welcome", { name: authUser.name }) });
         navigate(homeForRole(authUser.role));
       },
       onError: (err: unknown) => {
         const { status, data } = err as { status?: number; data?: { error?: string; code?: string } };
-        let title = "Error al iniciar sesión";
+        let title = t("auth.login.errors.generic");
         let description: string | undefined;
         if (status === 401) {
-          title = "Correo o contraseña incorrectos";
+          title = t("auth.login.errors.invalidCredentials");
         } else if (status === 403 && data?.code === "email_no_verificado") {
-          title = "Correo sin verificar";
-          description = "Debes verificar tu correo electrónico antes de iniciar sesión.";
+          title = t("auth.login.errors.emailNotVerifiedTitle");
+          description = t("auth.login.errors.emailNotVerifiedDesc");
         } else if (status === 403 && data?.code === "pendiente_aprobacion") {
-          title = "Cuenta pendiente de aprobación";
-          description = "Tu organización está pendiente de aprobación por el equipo de SEMBER.";
+          title = t("auth.login.errors.pendingApprovalTitle");
+          description = t("auth.login.errors.pendingApprovalDesc");
         } else if (data?.error) {
           description = data.error;
         }
@@ -78,47 +80,47 @@ export default function Login() {
         <div className="w-full max-w-md space-y-6">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
-              <CardDescription>Accede a tu cuenta de SEMBER CONNECT</CardDescription>
+              <CardTitle className="text-2xl">{t("auth.login.title")}</CardTitle>
+              <CardDescription>{t("auth.login.description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Correo electrónico</FormLabel>
-                      <FormControl><Input type="email" placeholder="tu@correo.com" autoComplete="email" {...field} /></FormControl>
+                      <FormLabel>{t("auth.login.emailLabel")}</FormLabel>
+                      <FormControl><Input type="email" placeholder={t("auth.login.emailPlaceholder")} autoComplete="email" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="password" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contraseña</FormLabel>
+                      <FormLabel>{t("auth.login.passwordLabel")}</FormLabel>
                       <FormControl><Input type="password" placeholder="••••••••" autoComplete="current-password" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <Button type="submit" className="w-full" disabled={login.isPending}>
                     <LogIn className="mr-2 h-4 w-4" />
-                    {login.isPending ? "Ingresando..." : "Ingresar"}
+                    {login.isPending ? t("auth.login.submitting") : t("auth.login.submit")}
                   </Button>
                 </form>
               </Form>
               <p className="text-center text-sm text-muted-foreground mt-4">
-                ¿No tienes cuenta?{" "}
-                <Link href="/registro" className="text-primary hover:underline">Regístrate</Link>
+                {t("auth.login.noAccount")}{" "}
+                <Link href="/registro" className="text-primary hover:underline">{t("auth.login.registerLink")}</Link>
               </p>
             </CardContent>
           </Card>
 
           <Card className="bg-muted/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Cuentas de prueba</CardTitle>
+              <CardTitle className="text-base">{t("auth.login.testAccounts.title")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-2">
-              <div><span className="font-medium text-foreground">Postulante:</span> postulante@sember.com / Postulante123!</div>
-              <div><span className="font-medium text-foreground">Empresa:</span> empresa@sember.com / Empresa123!</div>
-              <div><span className="font-medium text-foreground">Admin:</span> admin@sember.com / Admin123!</div>
+              <div><span className="font-medium text-foreground">{t("auth.login.testAccounts.applicant")}</span> postulante@sember.com / Postulante123!</div>
+              <div><span className="font-medium text-foreground">{t("auth.login.testAccounts.company")}</span> empresa@sember.com / Empresa123!</div>
+              <div><span className="font-medium text-foreground">{t("auth.login.testAccounts.admin")}</span> admin@sember.com / Admin123!</div>
             </CardContent>
           </Card>
         </div>

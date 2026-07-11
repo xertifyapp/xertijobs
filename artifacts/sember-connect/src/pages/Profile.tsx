@@ -1,7 +1,8 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useGetProfessional, useUpdateProfessional, useListApplications, useListSavedOpportunities, useGetOpportunity, getGetProfessionalQueryKey, getGetOpportunityQueryKey, getListApplicationsQueryKey, getListSavedOpportunitiesQueryKey } from "@workspace/api-client-react";
-import { STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,8 +23,8 @@ import { useUpload } from "@workspace/object-storage-web";
 
 const objectUrl = (path?: string | null) => (path ? `/api/storage${path}` : undefined);
 
-const profileSchema = z.object({
-  name: z.string().min(2, "El nombre es requerido"),
+const createProfileSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, t("profile.validation.nameRequired")),
   headline: z.string().optional(),
   country: z.string().optional(),
   city: z.string().optional(),
@@ -37,7 +38,10 @@ const profileSchema = z.object({
   tiktok: z.string().optional(),
 });
 
+type ProfileFormValues = z.infer<ReturnType<typeof createProfileSchema>>;
+
 function SavedOppCard({ oppId }: { oppId: number }) {
+  const { t } = useTranslation();
   const { data: opp } = useGetOpportunity(oppId, { query: { enabled: !!oppId, queryKey: getGetOpportunityQueryKey(oppId) } });
   if (!opp) return null;
   
@@ -47,7 +51,7 @@ function SavedOppCard({ oppId }: { oppId: number }) {
         <h3 className="font-bold text-lg mb-1">{opp.title}</h3>
         <p className="text-muted-foreground mb-4">{opp.organizationName}</p>
         <Link href={`/oportunidades/${opp.id}`}>
-          <Button variant="outline" size="sm">Ver Oportunidad</Button>
+          <Button variant="outline" size="sm">{t("profile.savedCard.view")}</Button>
         </Link>
       </CardContent>
     </Card>
@@ -55,6 +59,8 @@ function SavedOppCard({ oppId }: { oppId: number }) {
 }
 
 export default function Profile() {
+  const { t, i18n } = useTranslation();
+  const { applicationStatusLabel } = useDomainLabels();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -67,8 +73,8 @@ export default function Profile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<z.infer<typeof profileSchema>>({
-    resolver: zodResolver(profileSchema),
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(createProfileSchema(t)),
     defaultValues: {
       name: "",
       headline: "",
@@ -91,12 +97,12 @@ export default function Profile() {
       updateProfile.mutate({ id: professionalId, data: { avatarUrl: res.objectPath } }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetProfessionalQueryKey(professionalId) });
-          toast({ title: "Foto de perfil actualizada" });
+          toast({ title: t("profile.toast.photoUpdated") });
         },
-        onError: () => toast({ title: "Error al guardar la foto", variant: "destructive" }),
+        onError: () => toast({ title: t("profile.toast.photoSaveError"), variant: "destructive" }),
       });
     },
-    onError: () => toast({ title: "Error al subir la foto", variant: "destructive" }),
+    onError: () => toast({ title: t("profile.toast.photoUploadError"), variant: "destructive" }),
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,22 +130,22 @@ export default function Profile() {
     }
   }, [profile, form]);
 
-  const onSubmit = (values: z.infer<typeof profileSchema>) => {
+  const onSubmit = (values: ProfileFormValues) => {
     updateProfile.mutate({ id: professionalId, data: values }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetProfessionalQueryKey(professionalId) });
-        toast({ title: "Perfil actualizado correctamente" });
+        toast({ title: t("profile.toast.profileUpdated") });
       },
       onError: () => {
-        toast({ title: "Error al actualizar perfil", variant: "destructive" });
+        toast({ title: t("profile.toast.profileUpdateError"), variant: "destructive" });
       }
     });
   };
 
   const currentAvatar = form.watch("avatarUrl") || profile?.avatarUrl;
 
-  if (isProfileLoading) return <MainLayout><div className="py-20 text-center">Cargando perfil...</div></MainLayout>;
-  if (!profile) return <MainLayout><div className="py-20 text-center">Perfil no encontrado.</div></MainLayout>;
+  if (isProfileLoading) return <MainLayout><div className="py-20 text-center">{t("profile.loading")}</div></MainLayout>;
+  if (!profile) return <MainLayout><div className="py-20 text-center">{t("profile.notFound")}</div></MainLayout>;
 
   return (
     <MainLayout>
@@ -151,7 +157,7 @@ export default function Profile() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              title="Cambiar foto de perfil"
+              title={t("profile.changePhotoTitle")}
               className="group relative w-24 h-24 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden cursor-pointer"
             >
               {currentAvatar ? (
@@ -165,10 +171,10 @@ export default function Profile() {
             </button>
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold mb-2">{profile.name}</h1>
-              <p className="text-xl text-muted-foreground mb-4">{profile.headline || "Profesional en la red SEMBER"}</p>
+              <p className="text-xl text-muted-foreground mb-4">{profile.headline || t("profile.defaultHeadline")}</p>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground">
                 <div className="flex items-center gap-1"><Mail className="h-4 w-4" /> {profile.email}</div>
-                <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {profile.city ? `${profile.city}, ` : ''}{profile.country || 'Ubicación no especificada'}</div>
+                <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {profile.city ? `${profile.city}, ` : ''}{profile.country || t("profile.locationUnspecified")}</div>
               </div>
               {(profile.instagram || profile.linkedin || profile.x || profile.tiktok) && (
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
@@ -186,18 +192,18 @@ export default function Profile() {
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="applications" className="w-full">
           <TabsList className="mb-8">
-            <TabsTrigger value="applications">Mis Postulaciones</TabsTrigger>
-            <TabsTrigger value="saved">Oportunidades Guardadas</TabsTrigger>
-            <TabsTrigger value="edit">Editar Perfil</TabsTrigger>
+            <TabsTrigger value="applications">{t("profile.tabs.applications")}</TabsTrigger>
+            <TabsTrigger value="saved">{t("profile.tabs.saved")}</TabsTrigger>
+            <TabsTrigger value="edit">{t("profile.tabs.edit")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="applications">
             {isAppsLoading ? (
-              <div className="text-muted-foreground">Cargando postulaciones...</div>
+              <div className="text-muted-foreground">{t("profile.applications.loading")}</div>
             ) : applications?.length === 0 ? (
               <div className="text-center py-12 border rounded-xl bg-card">
-                <p className="text-muted-foreground mb-4">No tienes postulaciones activas.</p>
-                <Link href="/oportunidades"><Button>Explorar Oportunidades</Button></Link>
+                <p className="text-muted-foreground mb-4">{t("profile.applications.empty")}</p>
+                <Link href="/oportunidades"><Button>{t("profile.explore")}</Button></Link>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -207,10 +213,10 @@ export default function Profile() {
                       <div>
                         <h3 className="font-bold text-lg mb-1">{app.opportunityTitle}</h3>
                         <p className="text-muted-foreground text-sm">{app.organizationName}</p>
-                        <div className="text-xs text-muted-foreground mt-2">Postulado el {new Date(app.createdAt).toLocaleDateString('es-ES')}</div>
+                        <div className="text-xs text-muted-foreground mt-2">{t("profile.applications.appliedOn", { date: new Date(app.createdAt).toLocaleDateString(i18n.language) })}</div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge className={STATUS_COLORS[app.status]}>{app.status.replace("_", " ")}</Badge>
+                        <Badge className={STATUS_COLORS[app.status]}>{applicationStatusLabel(app.status)}</Badge>
                         <Link href={`/oportunidades/${app.opportunityId}`}>
                           <Button variant="ghost" size="icon"><ExternalLink className="h-4 w-4" /></Button>
                         </Link>
@@ -224,11 +230,11 @@ export default function Profile() {
 
           <TabsContent value="saved">
             {isSavedLoading ? (
-              <div className="text-muted-foreground">Cargando guardados...</div>
+              <div className="text-muted-foreground">{t("profile.saved.loading")}</div>
             ) : savedOpps?.length === 0 ? (
               <div className="text-center py-12 border rounded-xl bg-card">
-                <p className="text-muted-foreground mb-4">No tienes oportunidades guardadas.</p>
-                <Link href="/oportunidades"><Button>Explorar Oportunidades</Button></Link>
+                <p className="text-muted-foreground mb-4">{t("profile.saved.empty")}</p>
+                <Link href="/oportunidades"><Button>{t("profile.explore")}</Button></Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -242,7 +248,7 @@ export default function Profile() {
           <TabsContent value="edit">
             <Card>
               <CardHeader>
-                <CardTitle>Información Básica</CardTitle>
+                <CardTitle>{t("profile.edit.basicInfo")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -250,66 +256,66 @@ export default function Profile() {
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-20 rounded-full bg-primary/10 flex justify-center items-center text-primary shrink-0 overflow-hidden">
                         {currentAvatar ? (
-                          <img src={objectUrl(currentAvatar)} alt="Foto de perfil" className="w-full h-full object-cover" />
+                          <img src={objectUrl(currentAvatar)} alt={t("profile.edit.photoAlt")} className="w-full h-full object-cover" />
                         ) : (
                           <User2 className="w-10 h-10" />
                         )}
                       </div>
                       <div>
                         <Button type="button" variant="outline" disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
-                          {isUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Subiendo...</> : <><Camera className="w-4 h-4 mr-2" /> Cambiar Foto</>}
+                          {isUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("profile.edit.uploading")}</> : <><Camera className="w-4 h-4 mr-2" /> {t("profile.edit.changePhoto")}</>}
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-2">JPG, PNG o GIF. Máximo 10MB.</p>
+                        <p className="text-xs text-muted-foreground mt-2">{t("profile.edit.photoHint")}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem><FormLabel>Nombre Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t("profile.edit.fullName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="headline" render={({ field }) => (
-                        <FormItem><FormLabel>Titular (Headline)</FormLabel><FormControl><Input placeholder="Ej. Estudiante de Ing. de Software" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t("profile.edit.headline")}</FormLabel><FormControl><Input placeholder={t("profile.edit.headlinePlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="country" render={({ field }) => (
-                        <FormItem><FormLabel>País</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t("profile.edit.country")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="city" render={({ field }) => (
-                        <FormItem><FormLabel>Ciudad</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t("profile.edit.city")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
 
                     <FormField control={form.control} name="bio" render={({ field }) => (
-                      <FormItem><FormLabel>Sobre mí</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>{t("profile.edit.bio")}</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <FormField control={form.control} name="education" render={({ field }) => (
-                      <FormItem><FormLabel>Educación</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>{t("profile.edit.education")}</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <FormField control={form.control} name="experience" render={({ field }) => (
-                      <FormItem><FormLabel>Experiencia Profesional</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>{t("profile.edit.experience")}</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <div className="pt-2">
-                      <h3 className="text-sm font-semibold mb-4">Redes Sociales</h3>
+                      <h3 className="text-sm font-semibold mb-4">{t("profile.edit.socialNetworks")}</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField control={form.control} name="instagram" render={({ field }) => (
-                          <FormItem><FormLabel className="flex items-center gap-2"><FaInstagram className="h-4 w-4" /> Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaInstagram className="h-4 w-4" /> Instagram</FormLabel><FormControl><Input placeholder={t("profile.edit.instagramPlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="linkedin" render={({ field }) => (
-                          <FormItem><FormLabel className="flex items-center gap-2"><FaLinkedin className="h-4 w-4" /> LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaLinkedin className="h-4 w-4" /> LinkedIn</FormLabel><FormControl><Input placeholder={t("profile.edit.linkedinPlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="x" render={({ field }) => (
-                          <FormItem><FormLabel className="flex items-center gap-2"><FaXTwitter className="h-4 w-4" /> X (Twitter)</FormLabel><FormControl><Input placeholder="https://x.com/tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaXTwitter className="h-4 w-4" /> X (Twitter)</FormLabel><FormControl><Input placeholder={t("profile.edit.xPlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="tiktok" render={({ field }) => (
-                          <FormItem><FormLabel className="flex items-center gap-2"><FaTiktok className="h-4 w-4" /> TikTok</FormLabel><FormControl><Input placeholder="https://tiktok.com/@tuusuario" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="flex items-center gap-2"><FaTiktok className="h-4 w-4" /> TikTok</FormLabel><FormControl><Input placeholder={t("profile.edit.tiktokPlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                       </div>
                     </div>
 
                     <Button type="submit" disabled={updateProfile.isPending}>
-                      {updateProfile.isPending ? "Guardando..." : "Guardar Cambios"}
+                      {updateProfile.isPending ? t("profile.edit.saving") : t("profile.edit.save")}
                     </Button>
                   </form>
                 </Form>

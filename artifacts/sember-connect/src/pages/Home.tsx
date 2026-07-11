@@ -6,8 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Search, Globe, Briefcase, GraduationCap, Building2, MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
+import { useDomainLabels } from "@/lib/constants";
 
 export default function Home() {
+  const { t } = useTranslation();
+  const { opportunityTypeLabel, modalityLabel } = useDomainLabels();
   const { data: opportunities } = useListOpportunities({ status: "activa" });
   const { data: organizations } = useListOrganizations({ status: "aprobada" });
 
@@ -22,23 +26,23 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
             <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 mb-6 border-none px-3 py-1 text-sm">
-              Ecosistema Global de Talento
+              {t("home.hero.badge")}
             </Badge>
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
-              El ecosistema donde el talento, la educación y la internacionalización se conectan
+              {t("home.hero.title")}
             </h1>
             <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl leading-relaxed">
-              Universidades, empresas y organismos internacionales crean oportunidades que transforman vidas y comunidades.
+              {t("home.hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/oportunidades">
                 <Button size="lg" className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8 h-14">
-                  Explorar Oportunidades <ArrowRight className="ml-2 h-5 w-5" />
+                  {t("home.hero.exploreCta")} <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/registro?tipo=empresa">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-14 bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-white">
-                  Soy una Institución
+                  {t("home.hero.institutionCta")}
                 </Button>
               </Link>
             </div>
@@ -50,18 +54,18 @@ export default function Home() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Módulos del Ecosistema</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Encuentra exactamente lo que buscas en nuestras categorías especializadas.</p>
+            <h2 className="text-3xl font-bold mb-4">{t("home.modules.title")}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{t("home.modules.subtitle")}</p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
-              { icon: Briefcase, label: "Empleabilidad", color: "bg-blue-100 text-blue-600" },
-              { icon: GraduationCap, label: "Becas", color: "bg-emerald-100 text-emerald-600" },
-              { icon: Building2, label: "Pasantías", color: "bg-purple-100 text-purple-600" },
-              { icon: Globe, label: "Movilidad", color: "bg-orange-100 text-orange-600" },
-              { icon: Briefcase, label: "Bootcamps", color: "bg-pink-100 text-pink-600" },
-              { icon: GraduationCap, label: "Eventos", color: "bg-indigo-100 text-indigo-600" },
+              { icon: Briefcase, label: t("home.modules.empleabilidad"), color: "bg-blue-100 text-blue-600" },
+              { icon: GraduationCap, label: t("home.modules.becas"), color: "bg-emerald-100 text-emerald-600" },
+              { icon: Building2, label: t("home.modules.pasantias"), color: "bg-purple-100 text-purple-600" },
+              { icon: Globe, label: t("home.modules.movilidad"), color: "bg-orange-100 text-orange-600" },
+              { icon: Briefcase, label: t("home.modules.bootcamps"), color: "bg-pink-100 text-pink-600" },
+              { icon: GraduationCap, label: t("home.modules.eventos"), color: "bg-indigo-100 text-indigo-600" },
             ].map((mod, i) => (
               <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                 <CardContent className="p-6 flex flex-col items-center text-center gap-4">
@@ -81,11 +85,11 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl font-bold mb-4">Oportunidades Destacadas</h2>
-              <p className="text-muted-foreground">Las últimas publicaciones en el ecosistema.</p>
+              <h2 className="text-3xl font-bold mb-4">{t("home.featured.title")}</h2>
+              <p className="text-muted-foreground">{t("home.featured.subtitle")}</p>
             </div>
             <Link href="/oportunidades">
-              <Button variant="ghost" className="hidden sm:flex">Ver todas <ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button variant="ghost" className="hidden sm:flex">{t("home.featured.viewAll")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
             </Link>
           </div>
 
@@ -94,8 +98,8 @@ export default function Home() {
               <Card key={opp.id} className="flex flex-col hover:border-primary/50 transition-colors">
                 <CardContent className="p-6 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
-                    <Badge variant="secondary" className="capitalize">{opp.type}</Badge>
-                    {opp.paid && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Remunerada</Badge>}
+                    <Badge variant="secondary">{opportunityTypeLabel(opp.type)}</Badge>
+                    {opp.paid && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">{t("home.featured.paid")}</Badge>}
                   </div>
                   <h3 className="font-bold text-xl mb-2 line-clamp-2">{opp.title}</h3>
                   <div className="text-sm text-muted-foreground mb-4 font-medium">{opp.organizationName}</div>
@@ -107,32 +111,32 @@ export default function Home() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
-                      <span className="capitalize">{opp.modality}</span>
+                      <span>{modalityLabel(opp.modality)}</span>
                     </div>
                   </div>
                   
                   <Link href={`/oportunidades/${opp.id}`}>
-                    <Button className="w-full mt-6" variant="outline">Ver Detalles</Button>
+                    <Button className="w-full mt-6" variant="outline">{t("home.featured.viewDetails")}</Button>
                   </Link>
                 </CardContent>
               </Card>
             ))}
           </div>
           
-          <Button variant="ghost" className="w-full mt-8 sm:hidden">Ver todas las oportunidades</Button>
+          <Button variant="ghost" className="w-full mt-8 sm:hidden">{t("home.featured.viewAllMobile")}</Button>
         </div>
       </section>
       
       {/* CTA Section */}
       <section className="bg-primary text-primary-foreground py-24">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">Impulsa tu carrera internacional</h2>
+          <h2 className="text-3xl lg:text-5xl font-bold mb-6">{t("home.cta.title")}</h2>
           <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-10">
-            Únete a miles de profesionales y estudiantes que ya están conectando con las mejores instituciones.
+            {t("home.cta.subtitle")}
           </p>
           <Link href="/oportunidades">
             <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-10 h-14">
-              Comenzar ahora
+              {t("home.cta.button")}
             </Button>
           </Link>
         </div>

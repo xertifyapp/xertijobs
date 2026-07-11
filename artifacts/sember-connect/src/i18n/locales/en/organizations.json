@@ -1,0 +1,14 @@
+{
+  "organizations": {
+    "title": "Organizations Directory",
+    "subtitle": "Discover the universities, companies, governments and organizations that are part of SEMBER's global ecosystem.",
+    "searchPlaceholder": "Search organization...",
+    "typePlaceholder": "Type of institution",
+    "allTypes": "All types",
+    "loading": "Loading directory...",
+    "emptyTitle": "No organizations found",
+    "emptyDescription": "Try adjusting your search.",
+    "noDescription": "No description available.",
+    "visitWebsite": "Visit website"
+  }
+}

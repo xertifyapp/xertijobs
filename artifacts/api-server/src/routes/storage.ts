@@ -7,6 +7,7 @@ import {
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 import { requireAuth } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -24,18 +25,18 @@ const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
 router.post("/storage/uploads/request-url", requireAuth, async (req: Request, res: Response) => {
   const parsed = RequestUploadUrlBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "Faltan campos obligatorios o son inválidos" });
+    res.status(400).json({ error: t(req.locale, "storage.invalidFields") });
     return;
   }
 
   const { name, size, contentType } = parsed.data;
 
   if (!contentType || !ALLOWED_CONTENT_TYPES.includes(contentType)) {
-    res.status(400).json({ error: "Tipo de archivo no permitido. Sube una imagen (JPG, PNG, GIF o WebP)." });
+    res.status(400).json({ error: t(req.locale, "storage.fileTypeNotAllowed") });
     return;
   }
   if (typeof size === "number" && size > MAX_UPLOAD_BYTES) {
-    res.status(400).json({ error: "El archivo es demasiado grande. Máximo 10MB." });
+    res.status(400).json({ error: t(req.locale, "storage.fileTooLarge") });
     return;
   }
 
@@ -52,7 +53,7 @@ router.post("/storage/uploads/request-url", requireAuth, async (req: Request, re
     );
   } catch (error) {
     req.log.error({ err: error }, "Error generating upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
+    res.status(500).json({ error: t(req.locale, "storage.uploadUrlFailed") });
   }
 });
 
@@ -69,7 +70,7 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
     const filePath = Array.isArray(raw) ? raw.join("/") : raw;
     const file = await objectStorageService.searchPublicObject(filePath);
     if (!file) {
-      res.status(404).json({ error: "File not found" });
+      res.status(404).json({ error: t(req.locale, "storage.fileNotFound") });
       return;
     }
 
@@ -86,7 +87,7 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
     }
   } catch (error) {
     req.log.error({ err: error }, "Error serving public object");
-    res.status(500).json({ error: "Failed to serve public object" });
+    res.status(500).json({ error: t(req.locale, "storage.servePublicFailed") });
   }
 });
 
@@ -133,11 +134,11 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
       req.log.warn({ err: error }, "Object not found");
-      res.status(404).json({ error: "Object not found" });
+      res.status(404).json({ error: t(req.locale, "storage.objectNotFound") });
       return;
     }
     req.log.error({ err: error }, "Error serving object");
-    res.status(500).json({ error: "Failed to serve object" });
+    res.status(500).json({ error: t(req.locale, "storage.serveFailed") });
   }
 });
 

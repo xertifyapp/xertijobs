@@ -1,0 +1,14 @@
+{
+  "organizations": {
+    "title": "Diretório de Organizações",
+    "subtitle": "Descubra as universidades, empresas, governos e organismos que fazem parte do ecossistema global da SEMBER.",
+    "searchPlaceholder": "Buscar organização...",
+    "typePlaceholder": "Tipo de instituição",
+    "allTypes": "Todos os tipos",
+    "loading": "Carregando diretório...",
+    "emptyTitle": "Nenhuma organização encontrada",
+    "emptyDescription": "Tente ajustar sua busca.",
+    "noDescription": "Sem descrição disponível.",
+    "visitWebsite": "Visitar site"
+  }
+}

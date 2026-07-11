@@ -1,0 +1,59 @@
+{
+  "profile": {
+    "loading": "Carregando perfil...",
+    "notFound": "Perfil não encontrado.",
+    "changePhotoTitle": "Alterar foto de perfil",
+    "defaultHeadline": "Profissional na rede SEMBER",
+    "locationUnspecified": "Localização não especificada",
+    "explore": "Explorar Oportunidades",
+    "toast": {
+      "photoUpdated": "Foto de perfil atualizada",
+      "photoSaveError": "Erro ao salvar a foto",
+      "photoUploadError": "Erro ao enviar a foto",
+      "profileUpdated": "Perfil atualizado com sucesso",
+      "profileUpdateError": "Erro ao atualizar perfil"
+    },
+    "tabs": {
+      "applications": "Minhas Candidaturas",
+      "saved": "Oportunidades Salvas",
+      "edit": "Editar Perfil"
+    },
+    "savedCard": {
+      "view": "Ver Oportunidade"
+    },
+    "applications": {
+      "loading": "Carregando candidaturas...",
+      "empty": "Você não tem candidaturas ativas.",
+      "appliedOn": "Candidatado em {{date}}"
+    },
+    "saved": {
+      "loading": "Carregando salvos...",
+      "empty": "Você não tem oportunidades salvas."
+    },
+    "edit": {
+      "basicInfo": "Informações Básicas",
+      "photoAlt": "Foto de perfil",
+      "uploading": "Enviando...",
+      "changePhoto": "Alterar Foto",
+      "photoHint": "JPG, PNG ou GIF. Máximo 10MB.",
+      "fullName": "Nome Completo",
+      "headline": "Título (Headline)",
+      "headlinePlaceholder": "Ex. Estudante de Eng. de Software",
+      "country": "País",
+      "city": "Cidade",
+      "bio": "Sobre mim",
+      "education": "Educação",
+      "experience": "Experiência Profissional",
+      "socialNetworks": "Redes Sociais",
+      "instagramPlaceholder": "https://instagram.com/seuusuario",
+      "linkedinPlaceholder": "https://linkedin.com/in/seuusuario",
+      "xPlaceholder": "https://x.com/seuusuario",
+      "tiktokPlaceholder": "https://tiktok.com/@seuusuario",
+      "saving": "Salvando...",
+      "save": "Salvar Alterações"
+    },
+    "validation": {
+      "nameRequired": "O nome é obrigatório"
+    }
+  }
+}

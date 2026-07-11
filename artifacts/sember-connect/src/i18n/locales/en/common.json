@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "brandSuffix": "CONNECT",
+    "opportunities": "Opportunities",
+    "organizations": "Organizations",
+    "myProfile": "My Profile",
+    "panel": "Institutional Panel",
+    "admin": "Admin",
+    "createAccount": "Create Account",
+    "login": "Log In",
+    "logout": "Log Out",
+    "language": "Language"
+  },
+  "footer": {
+    "tagline": "Connecting talent with opportunities around the world.",
+    "explore": "Explore",
+    "searchOpportunities": "Search Opportunities",
+    "institutionsDirectory": "Institutions Directory",
+    "institutions": "Institutions",
+    "registerOrganization": "Register Organization",
+    "controlPanel": "Control Panel",
+    "legal": "Legal",
+    "terms": "Terms of Use",
+    "privacy": "Privacy",
+    "rights": "© {{year}} SEMBER CONNECT. All rights reserved.",
+    "poweredBy": "Powered By"
+  },
+  "actions": {
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "viewOpportunity": "View Opportunity",
+    "exploreOpportunities": "Explore Opportunities",
+    "backToHome": "Back to home",
+    "visitWebsite": "Visit website"
+  },
+  "notFound": {
+    "title": "404 Page Not Found",
+    "description": "Did you forget to add the page to the router?"
+  },
+  "enums": {
+    "opportunityType": {
+      "internship": "Internship",
+      "empleo": "Job",
+      "beca": "Scholarship",
+      "bootcamp": "Bootcamp",
+      "evento": "Event",
+      "movilidad": "Academic Mobility",
+      "convocatoria": "Open Call"
+    },
+    "organizationType": {
+      "universidad": "University",
+      "empresa": "Company",
+      "gobierno": "Government",
+      "ong": "NGO",
+      "fundacion": "Foundation",
+      "organismo_internacional": "International Organization"
+    },
+    "modality": {
+      "presencial": "On-site",
+      "remoto": "Remote",
+      "hibrido": "Hybrid"
+    },
+    "applicationStatus": {
+      "enviada": "Submitted",
+      "en_revision": "Under Review",
+      "preseleccionado": "Shortlisted",
+      "aceptado": "Accepted",
+      "rechazado": "Rejected"
+    },
+    "opportunityStatus": {
+      "activa": "Active",
+      "cerrada": "Closed",
+      "borrador": "Draft"
+    },
+    "organizationStatus": {
+      "pendiente": "Pending",
+      "aprobada": "Approved",
+      "rechazada": "Rejected"
+    }
+  }
+}

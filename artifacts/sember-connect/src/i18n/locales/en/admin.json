@@ -1,0 +1,35 @@
+{
+  "admin": {
+    "title": "SEMBER Administration Panel",
+    "subtitle": "Global view of the ecosystem",
+    "loadingMetrics": "Loading metrics...",
+    "stats": {
+      "organizations": "Institutions",
+      "opportunities": "Opportunities",
+      "applications": "Applications",
+      "countries": "Countries",
+      "pending": "Pending"
+    },
+    "tabs": {
+      "pending": "Pending Approvals",
+      "all": "All Organizations"
+    },
+    "pending": {
+      "cardTitle": "Membership Requests ({{count}})",
+      "empty": "There are no pending requests.",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "all": {
+      "approve": "Approve"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "empty": "There is no recent activity."
+    },
+    "toast": {
+      "approved": "Organization approved",
+      "rejected": "Organization rejected"
+    }
+  }
+}

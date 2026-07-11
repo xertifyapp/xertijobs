@@ -1,0 +1,66 @@
+{
+  "opportunities": {
+    "common": {
+      "paid": "Remunerada"
+    },
+    "list": {
+      "title": "Explorar Oportunidades",
+      "searchPlaceholder": "Buscar por palabra clave, cargo o empresa...",
+      "typePlaceholder": "Tipo",
+      "allTypes": "Todos los tipos",
+      "modalityPlaceholder": "Modalidad",
+      "allModalities": "Toda modalidad",
+      "loading": "Cargando oportunidades...",
+      "noResults": {
+        "title": "No se encontraron resultados",
+        "description": "Intenta ajustando los filtros de búsqueda."
+      },
+      "resultsCount": "{{count}} oportunidades encontradas",
+      "publishedOn": "Publicado {{date}}",
+      "closesOn": "Cierra el {{date}}",
+      "viewOpportunity": "Ver Oportunidad",
+      "sidebar": {
+        "title": "¿Buscas talento?",
+        "description": "Publica tus oportunidades y conecta con profesionales en toda la región.",
+        "cta": "Registrar Institución"
+      }
+    },
+    "detail": {
+      "loading": "Cargando oportunidad...",
+      "notFound": "Oportunidad no encontrada.",
+      "closes": "Cierra: {{date}}",
+      "loginToApply": "Inicia sesión para postular",
+      "apply": "Postularme",
+      "applyDialog": {
+        "title": "Postular a {{title}}",
+        "description": "Confirma tu postulación. Puedes agregar un mensaje opcional para la organización.",
+        "placeholder": "Mensaje opcional para el reclutador...",
+        "cancel": "Cancelar",
+        "sending": "Enviando...",
+        "confirm": "Confirmar Postulación"
+      },
+      "saved": "Guardada",
+      "save": "Guardar Oportunidad",
+      "description": "Descripción",
+      "requirements": "Requisitos",
+      "benefits": "Beneficios",
+      "competencies": "Competencias Esperadas",
+      "requiredDocuments": "Documentos Requeridos",
+      "externalApplication": {
+        "title": "Postulación Externa",
+        "description": "Esta oportunidad requiere completar la postulación en un sitio externo.",
+        "cta": "Ir al sitio externo"
+      },
+      "publishedOn": "Publicada el {{date}}",
+      "views": "{{count}} vistas",
+      "toast": {
+        "removed": "Oportunidad eliminada de guardados",
+        "saved": "Oportunidad guardada con éxito",
+        "applied": "¡Postulación enviada exitosamente!",
+        "alreadyApplied": "Ya te has postulado a esta oportunidad",
+        "applyErrorTitle": "Error al postular",
+        "applyErrorDescription": "Ocurrió un error inesperado"
+      }
+    }
+  }
+}

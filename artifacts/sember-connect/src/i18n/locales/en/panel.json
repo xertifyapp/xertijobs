@@ -1,0 +1,81 @@
+{
+  "panel": {
+    "title": "Institutional Panel",
+    "selectOrgPlaceholder": "Select Organization",
+    "noOrgs": "There are no approved organizations available.",
+    "registerOrg": "Register an Organization",
+    "stats": {
+      "totalViews": "Total Views",
+      "applications": "Applications",
+      "activeOpps": "Active Opps",
+      "publishedOpps": "Published Opps"
+    },
+    "tabs": {
+      "applications": "Received Applications",
+      "opportunities": "Manage Opportunities",
+      "profile": "Organization Profile"
+    },
+    "applications": {
+      "title": "Applications ({{count}})",
+      "empty": "No applications received yet.",
+      "appliesTo": "Applies to:"
+    },
+    "opportunities": {
+      "title": "Published Opportunities",
+      "new": "New Opportunity",
+      "empty": "You haven't published any opportunities.",
+      "view": "View",
+      "close": "Close",
+      "dialogTitle": "Publish New Opportunity",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "e.g. Frontend Developer",
+        "type": "Type",
+        "modality": "Modality",
+        "selectPlaceholder": "Select...",
+        "country": "Country",
+        "countryPlaceholder": "e.g. Argentina",
+        "city": "City",
+        "cityPlaceholder": "e.g. Buenos Aires",
+        "area": "Area/Department",
+        "areaPlaceholder": "e.g. Technology",
+        "description": "Description",
+        "requirements": "Requirements",
+        "paid": "Paid Opportunity"
+      },
+      "publishing": "Publishing...",
+      "publish": "Publish Opportunity"
+    },
+    "profile": {
+      "title": "Organization Profile",
+      "changeLogoTitle": "Change logo",
+      "uploading": "Uploading...",
+      "changeLogo": "Change Logo",
+      "logoHint": "JPG, PNG or GIF. Max 10MB.",
+      "name": "Organization Name",
+      "website": "Website",
+      "websitePlaceholder": "https://yourorganization.com",
+      "description": "Description",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    },
+    "toast": {
+      "logoUpdated": "Logo updated",
+      "logoSaveError": "Error saving logo",
+      "logoUploadError": "Error uploading logo",
+      "orgUpdated": "Organization profile updated",
+      "orgUpdateError": "Error updating profile",
+      "appStatusUpdated": "Application status updated",
+      "oppClosed": "Opportunity closed",
+      "oppPublished": "Opportunity published successfully",
+      "oppPublishError": "Error publishing"
+    },
+    "validation": {
+      "titleRequired": "Title required",
+      "typeRequired": "Type required",
+      "modalityRequired": "Modality required",
+      "countryRequired": "Country required",
+      "nameRequired": "Name is required"
+    }
+  }
+}

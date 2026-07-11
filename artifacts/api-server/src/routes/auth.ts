@@ -20,6 +20,7 @@ import {
   ResendOtpBody,
 } from "@workspace/api-zod";
 import { sendOtpEmail } from "../lib/mailer";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 
@@ -48,24 +49,24 @@ async function issueOtp(userId: number): Promise<string> {
 router.post("/auth/register", async (req, res): Promise<void> => {
   const parsed = RegisterBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
   const email = parsed.data.email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    res.status(400).json({ error: "Correo electrónico inválido" });
+    res.status(400).json({ error: t(req.locale, "auth.invalidEmail") });
     return;
   }
 
   if (parsed.data.role === "empresa" && !parsed.data.organization) {
-    res.status(400).json({ error: "Faltan los datos de la organización" });
+    res.status(400).json({ error: t(req.locale, "auth.missingOrgData") });
     return;
   }
 
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
   if (existing) {
-    res.status(409).json({ error: "Este correo ya está registrado" });
+    res.status(409).json({ error: t(req.locale, "auth.emailAlreadyRegistered") });
     return;
   }
 
@@ -117,7 +118,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   const code = await issueOtp(userId);
   let emailSent = true;
   try {
-    await sendOtpEmail(email, parsed.data.name, code);
+    await sendOtpEmail(email, parsed.data.name, code, req.locale);
   } catch (err) {
     req.log.error({ err }, "OTP email send failed on register");
     emailSent = false;
@@ -129,7 +130,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 router.post("/auth/verify-email", async (req, res): Promise<void> => {
   const parsed = VerifyEmailBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -137,13 +138,13 @@ router.post("/auth/verify-email", async (req, res): Promise<void> => {
   const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
   if (!user || user.emailVerifiedAt) {
     // Respuesta genérica: no revelar si el correo existe o ya está verificado
-    res.status(400).json({ error: "Código inválido o expirado. Solicita uno nuevo." });
+    res.status(400).json({ error: t(req.locale, "auth.otpInvalidOrExpired") });
     return;
   }
 
   const [otp] = await db.select().from(emailOtpsTable).where(eq(emailOtpsTable.userId, user.id));
   if (!otp || otp.expiresAt.getTime() < Date.now() || otp.attempts >= OTP_MAX_ATTEMPTS) {
-    res.status(400).json({ error: "Código inválido o expirado. Solicita uno nuevo." });
+    res.status(400).json({ error: t(req.locale, "auth.otpInvalidOrExpired") });
     return;
   }
 
@@ -157,8 +158,8 @@ router.post("/auth/verify-email", async (req, res): Promise<void> => {
     res.status(400).json({
       error:
         remaining > 0
-          ? `Código incorrecto. Te quedan ${remaining} intentos.`
-          : "Demasiados intentos. Solicita un código nuevo.",
+          ? t(req.locale, "auth.otpIncorrectRemaining", { remaining })
+          : t(req.locale, "auth.otpTooManyAttempts"),
     });
     return;
   }
@@ -172,7 +173,7 @@ router.post("/auth/verify-email", async (req, res): Promise<void> => {
 router.post("/auth/resend-otp", async (req, res): Promise<void> => {
   const parsed = ResendOtpBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -186,16 +187,16 @@ router.post("/auth/resend-otp", async (req, res): Promise<void> => {
 
   const [otp] = await db.select().from(emailOtpsTable).where(eq(emailOtpsTable.userId, user.id));
   if (otp && Date.now() - otp.createdAt.getTime() < OTP_RESEND_COOLDOWN_MS) {
-    res.status(429).json({ error: "Espera un minuto antes de solicitar otro código" });
+    res.status(429).json({ error: t(req.locale, "auth.otpResendCooldown") });
     return;
   }
 
   const code = await issueOtp(user.id);
   try {
-    await sendOtpEmail(email, user.name, code);
+    await sendOtpEmail(email, user.name, code, req.locale);
   } catch (err) {
     req.log.error({ err }, "OTP email send failed on resend");
-    res.status(502).json({ error: "No se pudo enviar el correo. Intenta de nuevo." });
+    res.status(502).json({ error: t(req.locale, "auth.emailSendFailed") });
     return;
   }
 
@@ -205,7 +206,7 @@ router.post("/auth/resend-otp", async (req, res): Promise<void> => {
 router.post("/auth/login", async (req, res): Promise<void> => {
   const parsed = LoginBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -213,13 +214,13 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
 
   if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
-    res.status(401).json({ error: "Correo o contraseña incorrectos" });
+    res.status(401).json({ error: t(req.locale, "auth.invalidCredentials") });
     return;
   }
 
   if (!user.emailVerifiedAt) {
     res.status(403).json({
-      error: "Debes verificar tu correo electrónico antes de iniciar sesión",
+      error: t(req.locale, "auth.emailNotVerified"),
       code: "email_no_verificado",
     });
     return;
@@ -232,7 +233,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       .where(eq(organizationsTable.id, user.organizationId));
     if (!org || org.status !== "aprobada") {
       res.status(403).json({
-        error: "Tu organización está pendiente de aprobación por el equipo de SEMBER",
+        error: t(req.locale, "auth.orgPendingApproval"),
         code: "pendiente_aprobacion",
       });
       return;
@@ -277,13 +278,13 @@ router.post("/auth/logout", async (req, res): Promise<void> => {
 router.get("/auth/me", async (req, res): Promise<void> => {
   const sessionUser = req.session.user;
   if (!sessionUser) {
-    res.status(401).json({ error: "No autenticado" });
+    res.status(401).json({ error: t(req.locale, "auth.notAuthenticated") });
     return;
   }
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, sessionUser.id));
   if (!user) {
-    res.status(401).json({ error: "No autenticado" });
+    res.status(401).json({ error: t(req.locale, "auth.notAuthenticated") });
     return;
   }
 

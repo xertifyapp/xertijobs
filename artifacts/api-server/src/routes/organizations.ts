@@ -15,13 +15,14 @@ import {
   DeleteOrganizationParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/auth";
+import { t } from "../lib/i18n";
 
 const router: IRouter = Router();
 
 router.get("/organizations", async (req, res): Promise<void> => {
   const query = ListOrganizationsQueryParams.safeParse(req.query);
   if (!query.success) {
-    res.status(400).json({ error: query.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -50,7 +51,7 @@ router.get("/organizations", async (req, res): Promise<void> => {
 router.post("/organizations", async (req, res): Promise<void> => {
   const parsed = CreateOrganizationBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -65,7 +66,7 @@ router.post("/organizations", async (req, res): Promise<void> => {
 router.get("/organizations/:id", async (req, res): Promise<void> => {
   const params = GetOrganizationParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -75,7 +76,7 @@ router.get("/organizations/:id", async (req, res): Promise<void> => {
     .where(eq(organizationsTable.id, params.data.id));
 
   if (!org) {
-    res.status(404).json({ error: "Organización no encontrada" });
+    res.status(404).json({ error: t(req.locale, "organizations.notFound") });
     return;
   }
 
@@ -86,24 +87,24 @@ router.patch("/organizations/:id", requireRole("empresa", "admin"), async (req, 
   const sessionUser = req.session.user;
   if (sessionUser?.role === "empresa") {
     if (sessionUser.organizationId !== Number(req.params["id"])) {
-      res.status(403).json({ error: "Solo puedes modificar tu propia organización" });
+      res.status(403).json({ error: t(req.locale, "organizations.onlyModifyOwn") });
       return;
     }
     if (req.body && typeof req.body === "object" && "status" in req.body) {
-      res.status(403).json({ error: "No puedes cambiar el estado de aprobación" });
+      res.status(403).json({ error: t(req.locale, "organizations.cannotChangeStatus") });
       return;
     }
   }
 
   const params = UpdateOrganizationParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
   const parsed = UpdateOrganizationBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidData") });
     return;
   }
 
@@ -114,7 +115,7 @@ router.patch("/organizations/:id", requireRole("empresa", "admin"), async (req, 
     .returning();
 
   if (!org) {
-    res.status(404).json({ error: "Organización no encontrada" });
+    res.status(404).json({ error: t(req.locale, "organizations.notFound") });
     return;
   }
 
@@ -124,7 +125,7 @@ router.patch("/organizations/:id", requireRole("empresa", "admin"), async (req, 
 router.delete("/organizations/:id", requireRole("admin"), async (req, res): Promise<void> => {
   const params = DeleteOrganizationParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: t(req.locale, "common.invalidParams") });
     return;
   }
 
@@ -134,7 +135,7 @@ router.delete("/organizations/:id", requireRole("admin"), async (req, res): Prom
     .returning();
 
   if (!org) {
-    res.status(404).json({ error: "Organización no encontrada" });
+    res.status(404).json({ error: t(req.locale, "organizations.notFound") });
     return;
   }
 

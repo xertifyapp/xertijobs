@@ -1,0 +1,59 @@
+{
+  "profile": {
+    "loading": "Loading profile...",
+    "notFound": "Profile not found.",
+    "changePhotoTitle": "Change profile photo",
+    "defaultHeadline": "Professional in the SEMBER network",
+    "locationUnspecified": "Location not specified",
+    "explore": "Explore Opportunities",
+    "toast": {
+      "photoUpdated": "Profile photo updated",
+      "photoSaveError": "Error saving photo",
+      "photoUploadError": "Error uploading photo",
+      "profileUpdated": "Profile updated successfully",
+      "profileUpdateError": "Error updating profile"
+    },
+    "tabs": {
+      "applications": "My Applications",
+      "saved": "Saved Opportunities",
+      "edit": "Edit Profile"
+    },
+    "savedCard": {
+      "view": "View Opportunity"
+    },
+    "applications": {
+      "loading": "Loading applications...",
+      "empty": "You have no active applications.",
+      "appliedOn": "Applied on {{date}}"
+    },
+    "saved": {
+      "loading": "Loading saved...",
+      "empty": "You have no saved opportunities."
+    },
+    "edit": {
+      "basicInfo": "Basic Information",
+      "photoAlt": "Profile photo",
+      "uploading": "Uploading...",
+      "changePhoto": "Change Photo",
+      "photoHint": "JPG, PNG or GIF. Max 10MB.",
+      "fullName": "Full Name",
+      "headline": "Headline",
+      "headlinePlaceholder": "e.g. Software Engineering Student",
+      "country": "Country",
+      "city": "City",
+      "bio": "About me",
+      "education": "Education",
+      "experience": "Professional Experience",
+      "socialNetworks": "Social Networks",
+      "instagramPlaceholder": "https://instagram.com/yourusername",
+      "linkedinPlaceholder": "https://linkedin.com/in/yourusername",
+      "xPlaceholder": "https://x.com/yourusername",
+      "tiktokPlaceholder": "https://tiktok.com/@yourusername",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    },
+    "validation": {
+      "nameRequired": "Name is required"
+    }
+  }
+}

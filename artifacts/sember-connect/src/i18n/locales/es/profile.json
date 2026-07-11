@@ -1,0 +1,59 @@
+{
+  "profile": {
+    "loading": "Cargando perfil...",
+    "notFound": "Perfil no encontrado.",
+    "changePhotoTitle": "Cambiar foto de perfil",
+    "defaultHeadline": "Profesional en la red SEMBER",
+    "locationUnspecified": "Ubicación no especificada",
+    "explore": "Explorar Oportunidades",
+    "toast": {
+      "photoUpdated": "Foto de perfil actualizada",
+      "photoSaveError": "Error al guardar la foto",
+      "photoUploadError": "Error al subir la foto",
+      "profileUpdated": "Perfil actualizado correctamente",
+      "profileUpdateError": "Error al actualizar perfil"
+    },
+    "tabs": {
+      "applications": "Mis Postulaciones",
+      "saved": "Oportunidades Guardadas",
+      "edit": "Editar Perfil"
+    },
+    "savedCard": {
+      "view": "Ver Oportunidad"
+    },
+    "applications": {
+      "loading": "Cargando postulaciones...",
+      "empty": "No tienes postulaciones activas.",
+      "appliedOn": "Postulado el {{date}}"
+    },
+    "saved": {
+      "loading": "Cargando guardados...",
+      "empty": "No tienes oportunidades guardadas."
+    },
+    "edit": {
+      "basicInfo": "Información Básica",
+      "photoAlt": "Foto de perfil",
+      "uploading": "Subiendo...",
+      "changePhoto": "Cambiar Foto",
+      "photoHint": "JPG, PNG o GIF. Máximo 10MB.",
+      "fullName": "Nombre Completo",
+      "headline": "Titular (Headline)",
+      "headlinePlaceholder": "Ej. Estudiante de Ing. de Software",
+      "country": "País",
+      "city": "Ciudad",
+      "bio": "Sobre mí",
+      "education": "Educación",
+      "experience": "Experiencia Profesional",
+      "socialNetworks": "Redes Sociales",
+      "instagramPlaceholder": "https://instagram.com/tuusuario",
+      "linkedinPlaceholder": "https://linkedin.com/in/tuusuario",
+      "xPlaceholder": "https://x.com/tuusuario",
+      "tiktokPlaceholder": "https://tiktok.com/@tuusuario",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios"
+    },
+    "validation": {
+      "nameRequired": "El nombre es requerido"
+    }
+  }
+}
