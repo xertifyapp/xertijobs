@@ -335,7 +335,8 @@ export const ListOpportunitiesResponseItem = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().nullish(),
   "language": zod.string().nullish(),
-  "status": zod.string().describe('activa | cerrada | borrador'),
+  "status": zod.string().describe('activa | pausada | cerrada | borrador'),
+  "featured": zod.boolean().optional(),
   "views": zod.number().optional(),
   "applicationsCount": zod.number().nullish(),
   "createdAt": zod.string()
@@ -366,7 +367,8 @@ export const CreateOpportunityBody = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().optional(),
   "language": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "featured": zod.boolean().optional()
 })
 
 export const CreateOpportunityResponse = zod.object({
@@ -388,7 +390,8 @@ export const CreateOpportunityResponse = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().nullish(),
   "language": zod.string().nullish(),
-  "status": zod.string().describe('activa | cerrada | borrador'),
+  "status": zod.string().describe('activa | pausada | cerrada | borrador'),
+  "featured": zod.boolean().optional(),
   "views": zod.number().optional(),
   "applicationsCount": zod.number().nullish(),
   "createdAt": zod.string()
@@ -421,7 +424,8 @@ export const GetOpportunityResponse = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().nullish(),
   "language": zod.string().nullish(),
-  "status": zod.string().describe('activa | cerrada | borrador'),
+  "status": zod.string().describe('activa | pausada | cerrada | borrador'),
+  "featured": zod.boolean().optional(),
   "views": zod.number().optional(),
   "applicationsCount": zod.number().nullish(),
   "createdAt": zod.string()
@@ -454,7 +458,8 @@ export const UpdateOpportunityBody = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().optional(),
   "language": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "featured": zod.boolean().optional()
 })
 
 export const UpdateOpportunityResponse = zod.object({
@@ -476,7 +481,8 @@ export const UpdateOpportunityResponse = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().nullish(),
   "language": zod.string().nullish(),
-  "status": zod.string().describe('activa | cerrada | borrador'),
+  "status": zod.string().describe('activa | pausada | cerrada | borrador'),
+  "featured": zod.boolean().optional(),
   "views": zod.number().optional(),
   "applicationsCount": zod.number().nullish(),
   "createdAt": zod.string()
@@ -695,7 +701,8 @@ export const ListSavedOpportunitiesResponseItem = zod.object({
   "requiredDocuments": zod.array(zod.string()).optional(),
   "externalLink": zod.string().nullish(),
   "language": zod.string().nullish(),
-  "status": zod.string().describe('activa | cerrada | borrador'),
+  "status": zod.string().describe('activa | pausada | cerrada | borrador'),
+  "featured": zod.boolean().optional(),
   "views": zod.number().optional(),
   "applicationsCount": zod.number().nullish(),
   "createdAt": zod.string()

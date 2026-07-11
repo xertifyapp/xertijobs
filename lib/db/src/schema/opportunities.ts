@@ -24,6 +24,7 @@ export const opportunitiesTable = pgTable("opportunities", {
   externalLink: text("external_link"),
   language: text("language"),
   status: text("status").notNull().default("activa"),
+  featured: boolean("featured").notNull().default(false),
   views: integer("views").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

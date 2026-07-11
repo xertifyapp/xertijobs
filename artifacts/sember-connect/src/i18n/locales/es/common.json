@@ -94,6 +94,7 @@
     },
     "opportunityStatus": {
       "activa": "Activa",
+      "pausada": "Pausada",
       "cerrada": "Cerrada",
       "borrador": "Borrador"
     },

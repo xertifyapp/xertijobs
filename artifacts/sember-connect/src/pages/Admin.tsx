@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useGetGlobalStats, useGetRecentActivity, useListOrganizations, useUpdateOrganization, useCreateOrganization, useDeleteOrganization, getListOrganizationsQueryKey, getGetGlobalStatsQueryKey, getGetRecentActivityQueryKey, type Organization } from "@workspace/api-client-react";
+import { useGetGlobalStats, useGetRecentActivity, useListOrganizations, useUpdateOrganization, useCreateOrganization, useDeleteOrganization, useListOpportunities, useCreateOpportunity, useUpdateOpportunity, useDeleteOpportunity, getListOrganizationsQueryKey, getListOpportunitiesQueryKey, getGetGlobalStatsQueryKey, getGetRecentActivityQueryKey, type Organization, type Opportunity } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,25 +14,39 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Building2, Briefcase, Users, Globe2, Activity, CheckCircle, XCircle, Plus, Pencil, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Building2, Briefcase, Users, Globe2, Activity, CheckCircle, XCircle, Plus, Pencil, Trash2, PlayCircle, PauseCircle, Ban, Star, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { STATUS_COLORS, useDomainLabels } from "@/lib/constants";
+import { STATUS_COLORS, OPPORTUNITY_STATUS_VALUES, useDomainLabels } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link } from "wouter";
 import { OrganizationForm, type OrganizationFormValues } from "@/components/OrganizationForm";
+import { OpportunityForm, type OpportunityFormValues } from "@/components/OpportunityForm";
 
 export default function Admin() {
   const { t, i18n } = useTranslation();
-  const { organizationTypeLabel, organizationStatusLabel } = useDomainLabels();
+  const { organizationTypeLabel, organizationStatusLabel, opportunityTypeLabel, opportunityStatusLabel } = useDomainLabels();
   const { data: stats, isLoading: isStatsLoading } = useGetGlobalStats();
   const { data: activity } = useGetRecentActivity();
   const { data: pendingOrgs } = useListOrganizations({ status: "pendiente" });
   const { data: allOrgs } = useListOrganizations();
+  const { data: allOpps } = useListOpportunities();
   
   const updateOrg = useUpdateOrganization();
   const createOrg = useCreateOrganization();
   const deleteOrg = useDeleteOrganization();
+  const createOpp = useCreateOpportunity();
+  const updateOpp = useUpdateOpportunity();
+  const deleteOpp = useDeleteOpportunity();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -41,11 +55,123 @@ export default function Admin() {
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
   const [deletingOrg, setDeletingOrg] = useState<Organization | null>(null);
 
+  const [oppFormOpen, setOppFormOpen] = useState(false);
+  const [oppFormMode, setOppFormMode] = useState<"create" | "edit">("create");
+  const [editingOpp, setEditingOpp] = useState<Opportunity | null>(null);
+  const [deletingOpp, setDeletingOpp] = useState<Opportunity | null>(null);
+  const [oppSearch, setOppSearch] = useState("");
+  const [oppStatusFilter, setOppStatusFilter] = useState<string>("all");
+
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
     queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetRecentActivityQueryKey() });
+  };
+
+  const invalidateOpps = () => {
+    queryClient.invalidateQueries({ queryKey: getListOpportunitiesQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetGlobalStatsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetRecentActivityQueryKey() });
+  };
+
+  const filteredOpps = useMemo(() => {
+    const term = oppSearch.trim().toLowerCase();
+    return (allOpps ?? []).filter((opp) => {
+      const matchesStatus = oppStatusFilter === "all" || opp.status === oppStatusFilter;
+      const matchesTerm =
+        term === "" ||
+        opp.title.toLowerCase().includes(term) ||
+        (opp.organizationName ?? "").toLowerCase().includes(term);
+      return matchesStatus && matchesTerm;
+    });
+  }, [allOpps, oppSearch, oppStatusFilter]);
+
+  const handleOppStatus = (opp: Opportunity, status: string) => {
+    updateOpp.mutate({ id: opp.id, data: { status } }, {
+      onSuccess: () => {
+        toast({
+          title: t("admin.opps.toast.statusChanged"),
+          variant: status === "cerrada" ? "destructive" : "default",
+        });
+        invalidateOpps();
+      },
+      onError: () => toast({ title: t("admin.opps.toast.error"), variant: "destructive" }),
+    });
+  };
+
+  const handleToggleFeatured = (opp: Opportunity) => {
+    const next = !opp.featured;
+    updateOpp.mutate({ id: opp.id, data: { featured: next } }, {
+      onSuccess: () => {
+        toast({ title: t(next ? "admin.opps.toast.featured" : "admin.opps.toast.unfeatured") });
+        invalidateOpps();
+      },
+      onError: () => toast({ title: t("admin.opps.toast.error"), variant: "destructive" }),
+    });
+  };
+
+  const openOppCreate = () => {
+    setOppFormMode("create");
+    setEditingOpp(null);
+    setOppFormOpen(true);
+  };
+
+  const openOppEdit = (opp: Opportunity) => {
+    setOppFormMode("edit");
+    setEditingOpp(opp);
+    setOppFormOpen(true);
+  };
+
+  const handleOppSubmit = (values: OpportunityFormValues) => {
+    const payload = {
+      organizationId: Number(values.organizationId),
+      title: values.title.trim(),
+      type: values.type,
+      area: values.area.trim(),
+      country: values.country.trim(),
+      city: values.city.trim(),
+      modality: values.modality,
+      status: values.status,
+      deadline: values.deadline.trim(),
+      description: values.description.trim(),
+      requirements: values.requirements.trim(),
+      benefits: values.benefits.trim(),
+      externalLink: values.externalLink.trim(),
+      paid: values.paid,
+      featured: values.featured,
+    };
+    if (oppFormMode === "create") {
+      createOpp.mutate({ data: payload }, {
+        onSuccess: () => {
+          toast({ title: t("admin.opps.toast.created") });
+          setOppFormOpen(false);
+          invalidateOpps();
+        },
+        onError: () => toast({ title: t("admin.opps.toast.error"), variant: "destructive" }),
+      });
+    } else if (editingOpp) {
+      updateOpp.mutate({ id: editingOpp.id, data: payload }, {
+        onSuccess: () => {
+          toast({ title: t("admin.opps.toast.updated") });
+          setOppFormOpen(false);
+          invalidateOpps();
+        },
+        onError: () => toast({ title: t("admin.opps.toast.error"), variant: "destructive" }),
+      });
+    }
+  };
+
+  const handleDeleteOpp = () => {
+    if (!deletingOpp) return;
+    deleteOpp.mutate({ id: deletingOpp.id }, {
+      onSuccess: () => {
+        toast({ title: t("admin.opps.toast.deleted"), variant: "destructive" });
+        setDeletingOpp(null);
+        invalidateOpps();
+      },
+      onError: () => toast({ title: t("admin.opps.toast.error"), variant: "destructive" }),
+    });
   };
 
   const handleChangeStatus = (id: number, status: string) => {
@@ -318,6 +444,102 @@ export default function Admin() {
         </div>
       </div>
 
+      <div className="container mx-auto px-4 pb-12">
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5" /> {t("admin.opps.sectionTitle")}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">{t("admin.opps.sectionSubtitle")}</p>
+            </div>
+            <Button onClick={openOppCreate} className="shrink-0">
+              <Plus className="w-4 h-4 mr-2" /> {t("admin.opps.new")}
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={oppSearch}
+                  onChange={(e) => setOppSearch(e.target.value)}
+                  placeholder={t("admin.opps.searchPlaceholder")}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={oppStatusFilter} onValueChange={setOppStatusFilter}>
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("admin.opps.filterAll")}</SelectItem>
+                  {OPPORTUNITY_STATUS_VALUES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {opportunityStatusLabel(s)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {filteredOpps.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">{t("admin.opps.empty")}</p>
+            ) : (
+              <div className="divide-y">
+                {filteredOpps.map((opp) => (
+                  <div key={opp.id} className="py-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h4 className="font-bold truncate">{opp.title}</h4>
+                        <Badge className={STATUS_COLORS[opp.status]}>{opportunityStatusLabel(opp.status)}</Badge>
+                        {opp.featured && (
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                            <Star className="w-3 h-3 mr-1 fill-amber-500 text-amber-500" /> {t("admin.opps.featured")}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {opp.organizationName ?? "—"} · {opportunityTypeLabel(opp.type)} · {opp.country}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 shrink-0">
+                      {opp.status !== "activa" && (
+                        <Button variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50" onClick={() => handleOppStatus(opp, "activa")} disabled={updateOpp.isPending}>
+                          <PlayCircle className="w-3.5 h-3.5 mr-1" /> {t("admin.opps.approve")}
+                        </Button>
+                      )}
+                      {opp.status !== "pausada" && (
+                        <Button variant="outline" size="sm" className="text-amber-700 border-amber-300 hover:bg-amber-50" onClick={() => handleOppStatus(opp, "pausada")} disabled={updateOpp.isPending}>
+                          <PauseCircle className="w-3.5 h-3.5 mr-1" /> {t("admin.opps.pause")}
+                        </Button>
+                      )}
+                      {opp.status !== "cerrada" && (
+                        <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50" onClick={() => handleOppStatus(opp, "cerrada")} disabled={updateOpp.isPending}>
+                          <Ban className="w-3.5 h-3.5 mr-1" /> {t("admin.opps.close")}
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" className={opp.featured ? "text-amber-700 border-amber-300 hover:bg-amber-50" : ""} onClick={() => handleToggleFeatured(opp)} disabled={updateOpp.isPending}>
+                        <Star className={`w-3.5 h-3.5 mr-1 ${opp.featured ? "fill-amber-500 text-amber-500" : ""}`} /> {t(opp.featured ? "admin.opps.unfeature" : "admin.opps.feature")}
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/oportunidades/${opp.id}`}>{t("admin.opps.view")}</Link>
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => openOppEdit(opp)}>
+                        <Pencil className="w-3.5 h-3.5 mr-1" /> {t("admin.opps.edit")}
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setDeletingOpp(opp)}>
+                        <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("admin.opps.delete")}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <OrganizationForm
         mode={formMode}
         open={formOpen}
@@ -326,6 +548,40 @@ export default function Admin() {
         onSubmit={handleFormSubmit}
         isPending={createOrg.isPending || updateOrg.isPending}
       />
+
+      <OpportunityForm
+        mode={oppFormMode}
+        open={oppFormOpen}
+        onOpenChange={setOppFormOpen}
+        opportunity={editingOpp}
+        organizations={allOrgs ?? []}
+        onSubmit={handleOppSubmit}
+        isPending={createOpp.isPending || updateOpp.isPending}
+      />
+
+      <AlertDialog open={deletingOpp !== null} onOpenChange={(open) => !open && setDeletingOpp(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.opps.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.opps.deleteConfirm", { title: deletingOpp?.title ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteOpp.isPending}>{t("admin.opps.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteOpp();
+              }}
+              disabled={deleteOpp.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("admin.opps.confirmDelete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deletingOrg !== null} onOpenChange={(open) => !open && setDeletingOrg(null)}>
         <AlertDialogContent>

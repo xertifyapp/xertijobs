@@ -39,6 +39,7 @@ const opportunityWithOrg = {
   externalLink: opportunitiesTable.externalLink,
   language: opportunitiesTable.language,
   status: opportunitiesTable.status,
+  featured: opportunitiesTable.featured,
   views: opportunitiesTable.views,
   createdAt: opportunitiesTable.createdAt,
   applicationsCount: sql<number>`(select count(*)::int from ${applicationsTable} where ${applicationsTable.opportunityId} = ${opportunitiesTable.id})`,
@@ -130,9 +131,13 @@ router.post("/opportunities", requireRole("empresa", "admin"), async (req, res):
     return;
   }
 
+  // "Destacar" (featured) is a SEMBER-only moderation action; an empresa cannot
+  // self-feature its own opportunities on create.
+  const featured = sessionUser?.role === "admin" ? (parsed.data.featured ?? false) : false;
+
   const [opp] = await db
     .insert(opportunitiesTable)
-    .values({ ...parsed.data, status: parsed.data.status ?? "activa" })
+    .values({ ...parsed.data, status: parsed.data.status ?? "activa", featured })
     .returning();
 
   if (!opp) {
@@ -217,9 +222,32 @@ router.patch("/opportunities/:id", requireRole("empresa", "admin"), async (req, 
     }
   }
 
+  // "Destacar" (featured) is a SEMBER-only moderation action. Strip it from
+  // non-admin payloads so an empresa cannot self-feature its opportunities.
+  const data = { ...parsed.data };
+  if (sessionUser?.role !== "admin") {
+    delete data.featured;
+  }
+
+  // If stripping leaves nothing to update, treat it as a no-op and return the
+  // current row (Drizzle throws "No values to set" on an empty update).
+  if (Object.keys(data).length === 0) {
+    const [current] = await db
+      .select(opportunityWithOrg)
+      .from(opportunitiesTable)
+      .innerJoin(organizationsTable, eq(opportunitiesTable.organizationId, organizationsTable.id))
+      .where(eq(opportunitiesTable.id, params.data.id));
+    if (!current) {
+      res.status(404).json({ error: t(req.locale, "opportunities.notFound") });
+      return;
+    }
+    res.json(UpdateOpportunityResponse.parse(serializeDates(current)));
+    return;
+  }
+
   const [updated] = await db
     .update(opportunitiesTable)
-    .set(parsed.data)
+    .set(data)
     .where(eq(opportunitiesTable.id, params.data.id))
     .returning();
 

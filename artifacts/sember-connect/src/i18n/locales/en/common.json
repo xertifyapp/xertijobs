@@ -94,6 +94,7 @@
     },
     "opportunityStatus": {
       "activa": "Active",
+      "pausada": "Paused",
       "cerrada": "Closed",
       "borrador": "Draft"
     },

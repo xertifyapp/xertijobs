@@ -23,6 +23,13 @@ export const ORGANIZATION_TYPE_VALUES = [
 
 export const MODALITY_VALUES = ["presencial", "remoto", "hibrido"] as const;
 
+export const OPPORTUNITY_STATUS_VALUES = [
+  "activa",
+  "pausada",
+  "cerrada",
+  "borrador",
+] as const;
+
 export const ORGANIZATION_STATUS_VALUES = [
   "pendiente",
   "verificada",
@@ -74,6 +81,7 @@ export function useDomainLabels() {
 
 export const STATUS_COLORS: Record<string, string> = {
   activa: "bg-green-100 text-green-800 border-green-200",
+  pausada: "bg-amber-100 text-amber-800 border-amber-200",
   cerrada: "bg-gray-100 text-gray-800 border-gray-200",
   borrador: "bg-yellow-100 text-yellow-800 border-yellow-200",
   pendiente: "bg-yellow-100 text-yellow-800 border-yellow-200",

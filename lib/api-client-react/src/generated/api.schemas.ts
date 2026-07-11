@@ -197,8 +197,9 @@ export interface Opportunity {
   externalLink?: string | null;
   /** @nullable */
   language?: string | null;
-  /** activa | cerrada | borrador */
+  /** activa | pausada | cerrada | borrador */
   status: string;
+  featured?: boolean;
   views?: number;
   /** @nullable */
   applicationsCount?: number | null;
@@ -224,6 +225,7 @@ export interface OpportunityInput {
   externalLink?: string;
   language?: string;
   status?: string;
+  featured?: boolean;
 }
 
 export interface OpportunityUpdate {
@@ -244,6 +246,7 @@ export interface OpportunityUpdate {
   externalLink?: string;
   language?: string;
   status?: string;
+  featured?: boolean;
 }
 
 export interface Professional {

@@ -24,4 +24,5 @@ export interface OpportunityUpdate {
   externalLink?: string;
   language?: string;
   status?: string;
+  featured?: boolean;
 }

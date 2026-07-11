@@ -25,4 +25,5 @@ export interface OpportunityInput {
   externalLink?: string;
   language?: string;
   status?: string;
+  featured?: boolean;
 }

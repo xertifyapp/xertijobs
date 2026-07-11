@@ -904,7 +904,8 @@ components:
           items: { type: string }
         externalLink: { type: ["string", "null"] }
         language: { type: ["string", "null"] }
-        status: { type: string, description: "activa | cerrada | borrador" }
+        status: { type: string, description: "activa | pausada | cerrada | borrador" }
+        featured: { type: boolean }
         views: { type: integer }
         applicationsCount: { type: ["integer", "null"] }
         createdAt: { type: string }
@@ -933,6 +934,7 @@ components:
         externalLink: { type: string }
         language: { type: string }
         status: { type: string }
+        featured: { type: boolean }
     OpportunityUpdate:
       type: object
       properties:
@@ -956,6 +958,7 @@ components:
         externalLink: { type: string }
         language: { type: string }
         status: { type: string }
+        featured: { type: boolean }
     Professional:
       type: object
       required: [id, name, email, createdAt]
