@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { STATUS_COLORS, OPPORTUNITY_STATUS_VALUES, useDomainLabels } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { OrganizationForm, type OrganizationFormValues } from "@/components/OrganizationForm";
 import { OpportunityForm, type OpportunityFormValues } from "@/components/OpportunityForm";
@@ -61,6 +61,20 @@ export default function Admin() {
   const [deletingOpp, setDeletingOpp] = useState<Opportunity | null>(null);
   const [oppSearch, setOppSearch] = useState("");
   const [oppStatusFilter, setOppStatusFilter] = useState<string>("all");
+
+  const [orgTab, setOrgTab] = useState("pending");
+  const orgSectionRef = useRef<HTMLDivElement>(null);
+  const oppSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) =>
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const goToOrganizations = (tab: "pending" | "all") => {
+    setOrgTab(tab);
+    scrollTo(orgSectionRef);
+  };
+
+  const goToOpportunities = () => scrollTo(oppSectionRef);
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: getListOrganizationsQueryKey({ status: "pendiente" }) });
@@ -269,7 +283,13 @@ export default function Admin() {
           <div className="py-10 text-center">{t("admin.loadingMetrics")}</div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card>
+            <Card
+              role="button"
+              tabIndex={0}
+              onClick={() => goToOrganizations("all")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToOrganizations("all"); } }}
+              className="cursor-pointer transition-shadow hover:shadow-md hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
               <CardContent className="p-6">
                 <div className="flex flex-col gap-2">
                   <Building2 className="w-6 h-6 text-blue-500" />
@@ -278,7 +298,13 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card
+              role="button"
+              tabIndex={0}
+              onClick={goToOpportunities}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToOpportunities(); } }}
+              className="cursor-pointer transition-shadow hover:shadow-md hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
               <CardContent className="p-6">
                 <div className="flex flex-col gap-2">
                   <Briefcase className="w-6 h-6 text-green-500" />
@@ -305,7 +331,13 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-primary text-primary-foreground">
+            <Card
+              role="button"
+              tabIndex={0}
+              onClick={() => goToOrganizations("pending")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToOrganizations("pending"); } }}
+              className="bg-primary text-primary-foreground cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
               <CardContent className="p-6">
                 <div className="flex flex-col gap-2">
                   <Activity className="w-6 h-6 text-primary-foreground/80" />
@@ -318,8 +350,8 @@ export default function Admin() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="pending">
+          <div className="lg:col-span-2 scroll-mt-8" ref={orgSectionRef}>
+            <Tabs value={orgTab} onValueChange={setOrgTab}>
               <TabsList>
                 <TabsTrigger value="pending" className="relative">
                   {t("admin.tabs.pending")}
@@ -444,7 +476,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pb-12">
+      <div className="container mx-auto px-4 pb-12 scroll-mt-8" ref={oppSectionRef}>
         <Card>
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
