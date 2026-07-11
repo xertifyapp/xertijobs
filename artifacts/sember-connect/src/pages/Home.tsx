@@ -25,10 +25,10 @@ export default function Home() {
               Ecosistema Global de Talento
             </Badge>
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
-              Conecta con tu próximo gran desafío
+              El ecosistema donde el talento, la educación y la internacionalización se conectan
             </h1>
             <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl leading-relaxed">
-              La plataforma internacional donde universidades, empresas y organismos se encuentran con el talento de América Latina y el mundo.
+              Universidades, empresas y organismos internacionales crean oportunidades que transforman vidas y comunidades.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/oportunidades">
